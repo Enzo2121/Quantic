@@ -1,0 +1,53 @@
+/* Exclusion de la sidebar du thème violet */
+
+/* Réinitialiser les couleurs de la sidebar aux valeurs par défaut */
+[data-sidebar] *,
+.sidebar *,
+[class*="sidebar"] * {
+  /* Empêcher l'héritage des couleurs violettes */
+}
+
+/* Boutons dans la sidebar - garder les couleurs originales */
+[data-sidebar] button:not([class*="bg-primary"]),
+.sidebar button:not([class*="bg-primary"]),
+[class*="sidebar"] button:not([class*="bg-primary"]) {
+  background-color: initial !important;
+  color: initial !important;
+  border-color: initial !important;
+}
+
+/* Liens dans la sidebar - couleurs par défaut */
+[data-sidebar] a,
+.sidebar a,
+[class*="sidebar"] a {
+  color: inherit !important;
+}
+
+[data-sidebar] a:hover,
+.sidebar a:hover,
+[class*="sidebar"] a:hover {
+  color: inherit !important;
+}
+
+/* Icônes dans la sidebar - couleurs par défaut */
+[data-sidebar] svg,
+.sidebar svg,
+[class*="sidebar"] svg {
+  color: inherit !important;
+  fill: current !important;
+}
+
+/* Navigation dans la sidebar */
+[data-sidebar] nav,
+.sidebar nav,
+[class*="sidebar"] nav {
+  color: inherit !important;
+}
+
+/* Éléments actifs dans la sidebar - garder le style original */
+[data-sidebar] [aria-current="page"],
+.sidebar [aria-current="page"],
+[class*="sidebar"] [aria-current="page"] {
+  background-color: hsl(var(--sidebar-accent)) !important;
+  color: hsl(var(--sidebar-accent-foreground)) !important;
+}
