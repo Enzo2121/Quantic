@@ -37,14 +37,14 @@ const forceBarColors = () => {
   if (container) {
     const bars = container.querySelectorAll('rect')
     bars.forEach((bar) => {
-      bar.setAttribute('fill', '#dc2626')
+      bar.setAttribute('fill', '#5f259f')
     })
 
     const observer = new MutationObserver(() => {
       const newBars = container.querySelectorAll('rect')
       newBars.forEach((bar) => {
-        if (bar.getAttribute('fill') !== '#dc2626') {
-          bar.setAttribute('fill', '#dc2626')
+        if (bar.getAttribute('fill') !== '#5f259f') {
+          bar.setAttribute('fill', '#5f259f')
         }
       })
     })
@@ -66,7 +66,7 @@ const forceBarColors = () => {
           :data="data"
           :categories="['count']"
           index="type"
-          :colors="['#dc2626']"
+          :colors="['#5f259f']"
           :show-tooltip="showTooltip"
           :show-legend="showLegend"
           :show-grid-line="showGridLine"

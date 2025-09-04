@@ -10,9 +10,10 @@ export const useFontainesStore = defineStore('fontaines', () => {
       search: '',
       types: [],
       etats: [],
-      arrondissements: []
+      arrondissements: [],
     },
     filterFields: ['types', 'etats', 'arrondissements'],
-    storeKey: 'fontaines'
+    storeKey: 'fontaines',
   })
 })
+  

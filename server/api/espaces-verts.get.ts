@@ -1,21 +1,46 @@
 // API Route optimisée pour les espaces verts avec cache Nitro
+function formatArrondissement(arrondissement: string | undefined): string {
+  if (!arrondissement) return 'Arrondissement non défini'
+
+  // Si c'est déjà au format 750XX, retourner tel quel
+  if (arrondissement.match(/^750\d{2}$/)) {
+    return arrondissement
+  }
+
+  // Format: "75001" ou "1" ou "1ER" -> "75001"
+  const numMatch = arrondissement.match(/(\d+)/)
+  if (numMatch) {
+    const num = parseInt(numMatch[1])
+    if (num >= 1 && num <= 20) {
+      return `750${num.toString().padStart(2, '0')}`
+    }
+  }
+
+  return 'Arrondissement non défini'
+}
+
 export default defineCachedEventHandler(async (event) => {
   const query = getQuery(event)
   
   const page = Number.parseInt(query.page as string) || 1
   const pageSize = Number.parseInt(query.pageSize as string) || 20
   const search = query.search as string || ''
-  const types = query.types as string[] || []
-  const categories = query.categories as string[] || []
-  const arrondissements = query.arrondissements as string[] || []
+  const types = typeof query.types === 'string' ? [query.types] : (query.types as string[]) || []
+  const categories = typeof query.categories === 'string' ? [query.categories] : (query.categories as string[]) || []
+  const arrondissements = typeof query.arrondissements === 'string' ? [query.arrondissements] : (query.arrondissements as string[]) || []
 
   console.log('API Route - Espaces verts:', { page, pageSize, search, types: types.length, categories: categories.length })
 
   try {
+    // Optimisation : si on a des filtres actifs, on peut utiliser un pageSize normal
+    // Si pas de filtres, on peut charger plus de données pour permettre la recherche globale
+    const hasFilters = types.length > 0 || categories.length > 0 || arrondissements.length > 0 || search.length > 0
+    const effectivePageSize = hasFilters ? pageSize : Math.max(pageSize, 1000) // Charger plus de données si pas de filtres
+
     const params = new URLSearchParams({
       dataset: 'ilots-de-fraicheur-espaces-verts-frais',
-      rows: String(pageSize),
-      start: String((page - 1) * pageSize),
+      rows: String(effectivePageSize),
+      start: String((page - 1) * pageSize), // Garder la pagination côté client
       facet: ['type', 'arrondissement'].join(',')
     })
 
@@ -50,7 +75,7 @@ export default defineCachedEventHandler(async (event) => {
         type: record.fields.type || 'Type non défini',
         categorie: record.fields.categorie,
         adresse: record.fields.adresse || 'Adresse non disponible',
-        arrondissement: record.fields.arrondissement || 'Arrondissement non défini',
+        arrondissement: formatArrondissement(record.fields.arrondissement),
         superficie: record.fields.superficie,
         ouvert_24h: record.fields.ouvert_24h,
         latitude: record.geometry?.coordinates?.[1] || record.fields?.geo_point_2d?.[0],
@@ -78,6 +103,9 @@ export default defineCachedEventHandler(async (event) => {
   name: 'espaces-verts',
   getKey: (event) => {
     const query = getQuery(event)
-    return `espaces-verts-${query.page || 1}-${query.pageSize || 20}-${query.search || ''}-${(query.types as string[] || []).join(',')}-${(query.categories as string[] || []).join(',')}-${(query.arrondissements as string[] || []).join(',')}`
+    const types = typeof query.types === 'string' ? [query.types] : (query.types as string[]) || []
+    const categories = typeof query.categories === 'string' ? [query.categories] : (query.categories as string[]) || []
+    const arrondissements = typeof query.arrondissements === 'string' ? [query.arrondissements] : (query.arrondissements as string[]) || []
+    return `espaces-verts-${query.page || 1}-${query.pageSize || 20}-${query.search || ''}-${types.join(',')}-${categories.join(',')}-${arrondissements.join(',')}`
   }
 })

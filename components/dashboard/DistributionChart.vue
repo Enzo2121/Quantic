@@ -16,6 +16,11 @@ interface Props {
   colors?: string[]
   showTooltip?: boolean
   showLegend?: boolean
+  totals?: {
+    equipements?: number
+    espacesVerts?: number
+    fontaines?: number
+  }
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -25,6 +30,7 @@ const props = withDefaults(defineProps<Props>(), {
   colors: () => ['#5f259f', '#22c55e', '#3b82f6'],
   showTooltip: true,
   showLegend: true,
+  totals: () => ({}),
 })
 
 const chartColors = computed(() =>
@@ -48,6 +54,7 @@ const chartColors = computed(() =>
             :colors="chartColors"
             :show-tooltip="showTooltip"
             :show-legend="showLegend"
+            :totals="totals"
           />
         </div>
       </div>

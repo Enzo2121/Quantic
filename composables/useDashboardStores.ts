@@ -37,10 +37,27 @@ export function useDashboardStores() {
 
   const initializeStores = async () => {
     try {
+      const promises = []
+
       if (!equipementsStore.isLoaded) {
-        await equipementsStore.fetchPage(1)
-        console.log('Équipements chargés:', equipementsStore.currentPageData.length)
+        promises.push(equipementsStore.fetchPage(1).then(() =>
+          console.log('Équipements chargés:', equipementsStore.currentPageData.length)
+        ))
       }
+
+      if (!espacesVertsStore.isLoaded) {
+        promises.push(espacesVertsStore.fetchPage(1).then(() =>
+          console.log('Espaces verts chargés:', espacesVertsStore.currentPageData.length)
+        ))
+      }
+
+      if (!fontainesStore.isLoaded) {
+        promises.push(fontainesStore.fetchPage(1).then(() =>
+          console.log('Fontaines chargées:', fontainesStore.currentPageData.length)
+        ))
+      }
+
+      await Promise.all(promises)
     } catch (error) {
       console.error('Erreur lors de l\'initialisation des stores:', error)
     }

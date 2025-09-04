@@ -1,13 +1,16 @@
 <script setup lang="ts">
+import DistributionChart from '@/components/dashboard/DistributionChart.vue'
+import DistrictsDistributionChart from '@/components/dashboard/DistrictsDistributionChart.vue'
+import EquipmentsByTypeChart from '@/components/dashboard/EquipmentsByTypeChart.vue'
+import StackedComparisonChart from '@/components/dashboard/StackedComparisonChart.vue'
+import TopDistrictsCard from '@/components/dashboard/TopDistrictsCard.vue'
+
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { AreaChart } from '@/components/ui/chart-area'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import DistrictsDistributionChart from '@/components/dashboard/DistrictsDistributionChart.vue'
-import DistributionChart from '@/components/dashboard/DistributionChart.vue'
-import EquipmentsByTypeChart from '@/components/dashboard/EquipmentsByTypeChart.vue'
-import TopDistrictsCard from '@/components/dashboard/TopDistrictsCard.vue'
+
 import { useDashboardStores } from '@/composables/useDashboardStores'
 
 definePageMeta({
@@ -78,11 +81,13 @@ const districtData = computed(() => {
     return []
   }
 
-  const districtCounts: Record<string, { district: string, total: number, equipements: number, espaces: number, fontaines: number }> = {}
+  const districtCounts: Record<string, { district: string, total: number, equipements: number, espaces: number, fontaines: number, displayName: string }> = {}
 
   for (let i = 1; i <= 20; i++) {
     const code = `750${i.toString().padStart(2, '0')}`
-    districtCounts[code] = { district: code, total: 0, equipements: 0, espaces: 0, fontaines: 0 }
+    const num = Number.parseInt(i.toString())
+    const displayName = `${num}${num === 1 ? 'er' : 'ème'}`
+    districtCounts[code] = { district: code, displayName, total: 0, equipements: 0, espaces: 0, fontaines: 0 }
   }
 
   equipementsStore.data.forEach((item) => {
@@ -202,6 +207,11 @@ onMounted(async () => {
             :data="donutData"
             title="Répartition générale"
             description="Distribution des équipements par catégorie"
+            :totals="{
+              equipements: stats.equipements.total,
+              espacesVerts: stats.espacesVerts.total,
+              fontaines: stats.fontaines.total
+            }"
           />
 
           <TopDistrictsCard
@@ -230,11 +240,19 @@ onMounted(async () => {
       </TabsContent>
 
       <TabsContent value="comparison" class="space-y-6">
+        <StackedComparisonChart
+          :data="districtData"
+          title="Comparaison par arrondissement"
+          description="Équipements urbains par quartier - Top 10 arrondissements"
+          :max-items="10"
+        />
+
+        <!-- Tableau détaillé complémentaire -->
         <Card>
           <CardHeader>
-            <CardTitle>Comparaison détaillée par arrondissement</CardTitle>
+            <CardTitle>Détails par arrondissement</CardTitle>
             <CardDescription>
-              Analyse comparative des équipements urbains
+              Vue détaillée de tous les arrondissements
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -255,7 +273,7 @@ onMounted(async () => {
                     :key="district.district"
                     class="border-b hover:bg-muted/50"
                   >
-                    <td class="p-2 font-medium">{{ district.district }}</td>
+                    <td class="p-2 font-medium">{{ district.displayName }}</td>
                     <td class="text-right p-2">
                       <Badge variant="secondary" class="bg-violet-100 text-violet-800">
                         {{ district.equipements }}

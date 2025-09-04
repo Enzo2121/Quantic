@@ -1,12 +1,12 @@
 <script setup lang="ts">
+import type { SelectOption } from '~/types/datasets'
+
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from '@/components/ui/command'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Badge } from '@/components/ui/badge'
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from '@/components/ui/command'
-import type { SelectOption } from '~/types/datasets'
 
 interface Props {
   search: string
@@ -28,7 +28,7 @@ const props = withDefaults(defineProps<Props>(), {
   categorieOptions: () => [],
   etatOptions: () => [],
   showCategorieFilter: false,
-  showEtatFilter: false
+  showEtatFilter: false,
 })
 
 const emit = defineEmits<{
@@ -136,7 +136,6 @@ function clearAll() {
 
 <template>
   <div class="space-y-6">
-    <!-- Barre de recherche -->
     <div class="space-y-2">
       <Label for="search">Rechercher</Label>
       <div class="relative">
@@ -159,13 +158,10 @@ function clearAll() {
       </div>
     </div>
 
-    <!-- Filtres multiples -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-      <!-- Filtre par type -->
       <div class="space-y-2">
         <Label>Type</Label>
 
-        <!-- Selected chips -->
         <div v-if="selectedTypes.length > 0" class="flex flex-wrap gap-1 mb-2">
           <Badge
             v-for="type in selectedTypes"
@@ -322,7 +318,7 @@ function clearAll() {
           </Button>
         </div>
 
-        <!-- Select -->
+        
         <Popover v-model:open="isArrondissementOpen">
           <PopoverTrigger as-child>
             <Button
