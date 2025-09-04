@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/button'
+import AppHeader from '@/components/app/AppHeader.vue'
 
 definePageMeta({
   layout: 'default',
@@ -13,19 +14,13 @@ useHead({
   ],
 })
 
-function navigateToDashboard() {
-  navigateTo('/dashboard')
+function navigateToPointFrais() {
+  navigateTo('/pointFrais')
 }
 </script>
 
 <template>
-  <div class="min-h-screen flex items-center justify-center bg-white">
-    <Button
-      size="lg"
-      class="bg-[#5F259F] px-8 py-4 text-lg font-semibold text-white shadow-lg transition-all duration-300 hover:bg-violet-900 hover:shadow-xl"
-      @click="navigateToDashboard"
-    >
-      Accéder à l'application
-    </Button>
+  <div class="w-full flex flex-col">
+    <AppHeader />
   </div>
 </template>

@@ -1,20 +1,19 @@
 <script setup lang="ts">
 import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useDashboardStores } from '@/composables/useDashboardStores'
 import { useDashboardUtils } from '@/composables/useDashboardUtils'
 
 definePageMeta({
-  title: 'Dashboard - Open Data Paris',
+  title: 'Points Frais - Open Data Paris',
   layout: 'default',
 })
 
 useHead({
-  title: 'Dashboard - Quantic',
+  title: 'Points Frais - Quantic',
   meta: [
-    { name: 'description', content: 'Dashboard d\'exploration des données Open Data de Paris' },
+    { name: 'description', content: 'Points frais d\'exploration des données Open Data de Paris' },
   ],
 })
 
@@ -22,18 +21,14 @@ const { equipementsStore, espacesVertsStore, fontainesStore, stats, initializeSt
 const { getEquipementCellValue, getEspaceVertCellValue, getFontaineCellValue, equipementsColumns, espacesVertsColumns, fontainesColumns } = useDashboardUtils()
 
 const activeTab = ref('equipements')
-
-
-
 const isMapModalOpen = ref(false)
 const selectedMapItem = ref<any>(null)
-
-
 
 onMounted(async () => {
   try {
     await initializeStores()
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Erreur lors de l\'initialisation:', error)
   }
 })
@@ -76,82 +71,6 @@ function handleEquipementsReset() {
   equipementsStore.reset()
 }
 
-async function handleLoadMoreEquipements(mode: 'medium' | 'full') {
-  await equipementsStore.loadMoreData(mode)
-}
-
-async function handleEspacesVertsSearch(value: string) {
-  await espacesVertsStore.updateFilters({ search: value })
-}
-
-async function handleEspacesVertsTypes(value: string[]) {
-  await espacesVertsStore.updateFilters({ types: value })
-}
-
-async function handleEspacesVertsCategories(value: string[]) {
-  await espacesVertsStore.updateFilters({ categories: value })
-}
-
-async function handleEspacesVertsArrondissements(value: string[]) {
-  await espacesVertsStore.updateFilters({ arrondissements: value })
-}
-
-function handleEspacesVertsSort(sortBy: string, sortOrder: 'asc' | 'desc') {
-  espacesVertsStore.updateSort(sortBy, sortOrder)
-}
-
-function handleEspacesVertsPage(page: number) {
-  espacesVertsStore.updatePagination(page)
-}
-
-function handleEspacesVertsPageSize(pageSize: number) {
-  espacesVertsStore.updatePagination(1, pageSize)
-}
-
-function handleEspacesVertsReset() {
-  espacesVertsStore.reset()
-}
-
-async function handleLoadMoreEspacesVerts(mode: 'medium' | 'full') {
-  await espacesVertsStore.loadMoreData(mode)
-}
-
-async function handleFontainesSearch(value: string) {
-  await fontainesStore.updateFilters({ search: value })
-}
-
-async function handleFontainesTypes(value: string[]) {
-  await fontainesStore.updateFilters({ types: value })
-}
-
-async function handleFontainesArrondissements(value: string[]) {
-  await fontainesStore.updateFilters({ arrondissements: value })
-}
-
-async function handleFontainesEtats(value: string[]) {
-  await fontainesStore.updateFilters({ etats: value })
-}
-
-function handleFontainesSort(sortBy: string, sortOrder: 'asc' | 'desc') {
-  fontainesStore.updateSort(sortBy, sortOrder)
-}
-
-function handleFontainesPage(page: number) {
-  fontainesStore.updatePagination(page)
-}
-
-function handleFontainesPageSize(pageSize: number) {
-  fontainesStore.updatePagination(1, pageSize)
-}
-
-function handleFontainesReset() {
-  fontainesStore.reset()
-}
-
-async function handleLoadMoreFontaines(mode: 'medium' | 'full') {
-  await fontainesStore.loadMoreData(mode)
-}
-
 const showFloatingButton = computed(() =>
   ['equipements', 'espaces-verts', 'fontaines'].includes(activeTab.value),
 )
@@ -163,7 +82,7 @@ const currentStoreData = computed(() => {
         data: equipementsStore.filteredData,
         loading: equipementsStore.loading,
         name: 'équipements sportifs',
-        filters: equipementsStore.filters,
+        searchParams: equipementsStore.filters,
         filterOptions: equipementsStore.filterOptions,
       }
     case 'espaces-verts':
@@ -171,7 +90,7 @@ const currentStoreData = computed(() => {
         data: espacesVertsStore.filteredData,
         loading: espacesVertsStore.loading,
         name: 'espaces verts',
-        filters: espacesVertsStore.filters,
+        searchParams: espacesVertsStore.filters,
         filterOptions: espacesVertsStore.filterOptions,
       }
     case 'fontaines':
@@ -179,7 +98,7 @@ const currentStoreData = computed(() => {
         data: fontainesStore.filteredData,
         loading: fontainesStore.loading,
         name: 'fontaines à boire',
-        filters: fontainesStore.filters,
+        searchParams: fontainesStore.filters,
         filterOptions: fontainesStore.filterOptions,
       }
     default:
@@ -187,7 +106,7 @@ const currentStoreData = computed(() => {
         data: [],
         loading: false,
         name: '',
-        filters: {},
+        searchParams: {},
         filterOptions: {},
       }
   }
@@ -198,77 +117,51 @@ const mapModalTitle = computed(() =>
 )
 
 function openMapModal() {
-  selectedMapItem.value = null // Afficher tous les items
+  selectedMapItem.value = null
   isMapModalOpen.value = true
 }
 
 function handleOpenMapModal(item: any) {
-  selectedMapItem.value = item // Afficher seulement cet item
+  selectedMapItem.value = item
   isMapModalOpen.value = true
-}
-
-async function handleModalFiltersUpdate(newFilters: any) {
-  switch (activeTab.value) {
-    case 'equipements':
-      await equipementsStore.updateFilters(newFilters)
-      break
-    case 'espaces-verts':
-      await espacesVertsStore.updateFilters(newFilters)
-      break
-    case 'fontaines':
-      await fontainesStore.updateFilters(newFilters)
-      break
-  }
 }
 </script>
 
 <template>
   <div class="w-full flex flex-col gap-6">
-
-    <div class="flex flex-wrap items-center justify-between gap-4">
-      <AppHeader />
-      <div class="flex items-center gap-2">
-        <Button variant="outline" @click="navigateTo('/analytics')">
-          <Icon name="i-lucide-bar-chart-3" class="h-4 w-4 mr-2" />
-          Analyses
-        </Button>
-      </div>
-    </div>
-
-
-
+    <div class="flex flex-wrap items-center justify-between gap-4" />
     <Tabs v-model="activeTab" class="w-full">
-      <TabsList class="grid w-full grid-cols-3 h-16 p-2">
+      <TabsList class="grid grid-cols-3 h-16 w-full p-1">
         <TabsTrigger
           value="equipements"
-          class="flex items-center gap-3 px-6 py-4 text-base font-medium"
+          class="h-full flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium"
         >
-          <Icon name="i-lucide-dumbbell" class="h-5 w-5" />
-          <span class="hidden sm:inline">Équipements sportifs</span>
-          <span class="sm:hidden">Équipements</span>
-          <Badge variant="secondary" class="ml-2">
+          <Icon name="i-lucide-dumbbell" class="h-4 w-4 flex-shrink-0" />
+          <span class="hidden truncate sm:inline">Équipements sportifs</span>
+          <span class="truncate sm:hidden">Équipements</span>
+          <Badge variant="secondary" class="ml-1 flex-shrink-0 text-xs">
             {{ stats.equipements.total }}
           </Badge>
         </TabsTrigger>
         <TabsTrigger
           value="espaces-verts"
-          class="flex items-center gap-3 px-6 py-4 text-base font-medium"
+          class="h-full flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium"
         >
-          <Icon name="i-lucide-leaf" class="h-5 w-5" />
-          <span class="hidden sm:inline">Espaces verts</span>
-          <span class="sm:hidden">Espaces</span>
-          <Badge variant="secondary" class="ml-2">
+          <Icon name="i-lucide-leaf" class="h-4 w-4 flex-shrink-0" />
+          <span class="hidden truncate sm:inline">Espaces verts</span>
+          <span class="truncate sm:hidden">Espaces</span>
+          <Badge variant="secondary" class="ml-1 flex-shrink-0 text-xs">
             {{ stats.espacesVerts.total }}
           </Badge>
         </TabsTrigger>
         <TabsTrigger
           value="fontaines"
-          class="flex items-center gap-3 px-6 py-4 text-base font-medium"
+          class="h-full flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium"
         >
-          <Icon name="i-lucide-droplets" class="h-5 w-5" />
-          <span class="hidden sm:inline">Fontaines à boire</span>
-          <span class="sm:hidden">Fontaines</span>
-          <Badge variant="secondary" class="ml-2">
+          <Icon name="i-lucide-droplets" class="h-4 w-4 flex-shrink-0" />
+          <span class="hidden truncate sm:inline">Fontaines à boire</span>
+          <span class="truncate sm:hidden">Fontaines</span>
+          <Badge variant="secondary" class="ml-1 flex-shrink-0 text-xs">
             {{ stats.fontaines.total }}
           </Badge>
         </TabsTrigger>
@@ -276,21 +169,12 @@ async function handleModalFiltersUpdate(newFilters: any) {
 
       <TabsContent value="equipements" class="space-y-6">
         <Card>
-          <CardHeader>
-            <CardTitle class="flex items-center gap-2">
-              <Icon name="i-lucide-dumbbell" class="h-5 w-5" />
-              Équipements sportifs de Paris
-            </CardTitle>
-            <CardDescription>
-              Découvrez tous les équipements sportifs disponibles dans les différents arrondissements de Paris
-            </CardDescription>
-          </CardHeader>
-          <CardContent class="space-y-6">
+          <CardContent class="space-y-6 mt-2">
             <div class="dashboard-filters">
               <DataFilters
-                :search="equipementsStore.filters.search"
-                :selected-types="equipementsStore.filters.types"
-                :selected-arrondissements="equipementsStore.filters.arrondissements"
+                :search="(() => equipementsStore.filters.search)()"
+                :selected-types="(() => equipementsStore.filters.types)()"
+                :selected-arrondissements="(() => equipementsStore.filters.arrondissements)()"
                 :type-options="equipementsStore.filterOptions.types"
                 :arrondissement-options="equipementsStore.filterOptions.arrondissements"
                 :is-loading-options="equipementsStore.isLoadingOptions"
@@ -322,23 +206,9 @@ async function handleModalFiltersUpdate(newFilters: any) {
               />
             </LoadingState>
 
-            <!-- Bouton Charger Plus pour équipements -->
-            <LoadMoreButton
-              :loading="equipementsStore.isLoadingMore"
-              :loading-mode="equipementsStore.loadingMode"
-              :has-loaded-more="equipementsStore.hasLoadedMore"
-              :can-load-more="equipementsStore.canLoadMore"
-              :total-items="equipementsStore.pagination.total"
-              :current-items="equipementsStore.data.length"
-              :smart-load-suggestion="equipementsStore.smartLoadSuggestion"
-              :has-active-filters="equipementsStore.filterStatus.hasActiveFilters"
-              @load-more="handleLoadMoreEquipements"
-            />
           </CardContent>
         </Card>
       </TabsContent>
-
-
       <TabsContent value="espaces-verts" class="space-y-6">
         <Card>
           <CardHeader>
@@ -391,18 +261,6 @@ async function handleModalFiltersUpdate(newFilters: any) {
               />
             </LoadingState>
 
-            <!-- Bouton Charger Plus pour espaces verts -->
-            <LoadMoreButton
-              :loading="espacesVertsStore.isLoadingMore"
-              :loading-mode="espacesVertsStore.loadingMode"
-              :has-loaded-more="espacesVertsStore.hasLoadedMore"
-              :can-load-more="espacesVertsStore.canLoadMore"
-              :total-items="espacesVertsStore.pagination.total"
-              :current-items="espacesVertsStore.data.length"
-              :smart-load-suggestion="espacesVertsStore.smartLoadSuggestion"
-              :has-active-filters="espacesVertsStore.filterStatus.hasActiveFilters"
-              @load-more="handleLoadMoreEspacesVerts"
-            />
           </CardContent>
         </Card>
       </TabsContent>
@@ -459,18 +317,6 @@ async function handleModalFiltersUpdate(newFilters: any) {
               />
             </LoadingState>
 
-            <!-- Bouton Charger Plus pour fontaines -->
-            <LoadMoreButton
-              :loading="fontainesStore.isLoadingMore"
-              :loading-mode="fontainesStore.loadingMode"
-              :has-loaded-more="fontainesStore.hasLoadedMore"
-              :can-load-more="fontainesStore.canLoadMore"
-              :total-items="fontainesStore.pagination.total"
-              :current-items="fontainesStore.data.length"
-              :smart-load-suggestion="fontainesStore.smartLoadSuggestion"
-              :has-active-filters="fontainesStore.filterStatus.hasActiveFilters"
-              @load-more="handleLoadMoreFontaines"
-            />
           </CardContent>
         </Card>
       </TabsContent>
@@ -489,10 +335,9 @@ async function handleModalFiltersUpdate(newFilters: any) {
       :title="selectedMapItem ? `${selectedMapItem.nom || selectedMapItem.adresse || 'Point sélectionné'}` : mapModalTitle"
       :loading="currentStoreData.loading"
       :current-store="activeTab as 'equipements' | 'espaces-verts' | 'fontaines'"
-      :filters="currentStoreData.filters"
+      :map-filters="currentStoreData.searchParams"
       :filter-options="currentStoreData.filterOptions"
       :selected-item="selectedMapItem"
-      @update:filters="handleModalFiltersUpdate"
     />
   </div>
 </template>

@@ -161,9 +161,9 @@ onMounted(async () => {
         </p>
       </div>
       <div class="flex items-center gap-2">
-        <Button variant="outline" @click="navigateTo('/dashboard')">
+        <Button variant="outline" @click="navigateTo('/pointFrais')">
           <Icon name="i-lucide-arrow-left" class="h-4 w-4 mr-2" />
-          Retour au dashboard
+          Retour aux points frais
         </Button>
         <Badge variant="secondary" class="text-sm">
           {{ totalItems.toLocaleString() }} éléments analysés

@@ -2,32 +2,9 @@
 import { Button } from '@/components/ui/button'
 import AppCard from './AppCard.vue'
 
-// Reactive state
-const searchQuery = ref('')
-
-// Methods
-function handleSearch() {
-  if (searchQuery.value.trim()) {
-    // Scroll to dashboard and trigger search
-    const dashboardElement = document.querySelector('#dashboard-content')
-    if (dashboardElement) {
-      dashboardElement.scrollIntoView({ behavior: 'smooth' })
-    }
-  }
+function navigateToPointFrais() {
+  navigateTo('/pointFrais')
 }
-
-function scrollToDashboard() {
-  const dashboardElement = document.querySelector('#dashboard-content')
-  if (dashboardElement) {
-    dashboardElement.scrollIntoView({ behavior: 'smooth' })
-  }
-}
-
-// Expose methods for parent component
-defineExpose({
-  handleSearch,
-  scrollToDashboard,
-})
 </script>
 
 <template>
@@ -43,40 +20,23 @@ defineExpose({
             SOS Paris <span class="bg-[#5F259F] text-white px-2 py-1 rounded">surchauffe</span> . Trouvez une zone fraîcheur en quelques clics
           </h1>
 
-
           <p class="max-w-4xl font-normal leading-relaxed text-gray-400 text-xl">
             Découvrez les équipements sportifs, espaces verts et fontaines à boire de Paris.
             Restez au frais cet été grâce aux données Open Data.
           </p>
 
-
-          <div class="max-w-2xl space-y-6">
-
-            <div class="group relative">
-              <div class="rounded-lg border border-black/10 bg-[#FAFAFA] px-4 py-3 shadow-sm transition-colors hover:bg-gray-50">
-                <div class="flex items-center gap-4">
-
-                  <div class="flex-shrink-0">
-                    <Icon
-                      name="i-lucide-search"
-                      class="h-6 w-6 text-gray-600"
-                    />
-                  </div>
-
-
-                  <input
-                    v-model="searchQuery"
-                    type="text"
-                    placeholder="Rechercher un équipement, un parc, une fontaine..."
-                    class="flex-1 border-0 bg-transparent text-base font-medium outline-none placeholder:text-gray-400"
-                    @keyup.enter="handleSearch"
-                  />
-                </div>
-              </div>
-            </div>
-
+          <div class="pt-0">
+            <Button
+              size="xld"
+              class="bg-[#5F259F] hover:bg-[#5F259F]/90 px-8 py-4 text-lg font-semibold text-white shadow-lg transition-all duration-300 hover:shadow-xl"
+              @click="navigateToPointFrais"
+            >
+              <Icon name="i-lucide-map-pin" class="h-5 w-5 mr-2" />
+              Trouver un point frais
+            </Button>
           </div>
 
+          <div class="max-w-2xl space-y-6" />
 
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 lg:gap-4 pt-8 w-full px-2 lg:px-0">
             <AppCard
@@ -100,7 +60,6 @@ defineExpose({
           </div>
         </div>
       </div>
-
 
       <div class="absolute bottom-0 left-0 right-0">
         <svg viewBox="0 0 1440 120" class="h-12 w-full fill-white">

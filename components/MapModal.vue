@@ -7,7 +7,7 @@ interface Props {
   title?: string
   loading?: boolean
   currentStore?: 'equipements' | 'espaces-verts' | 'fontaines'
-  filters?: any
+  mapFilters?: any
   filterOptions?: any
   selectedItem?: EquipementSportifItem | EspaceVertItem | FontaineItem | null
 }
@@ -18,14 +18,14 @@ const props = withDefaults(defineProps<Props>(), {
   title: 'Carte interactive',
   loading: false,
   currentStore: 'equipements',
-  filters: () => ({}),
+  mapFilters: () => ({}),
   filterOptions: () => ({}),
   selectedItem: null,
 })
 
 const emit = defineEmits<{
   'update:open': [value: boolean]
-  'update:filters': [filters: any]
+  'update:mapFilters': [mapFilters: any]
 }>()
 
 const mapView = ref()
@@ -46,9 +46,11 @@ const stats = computed(() => {
     if ('type' in item && typeof item.type === 'string') {
       if (item.type.toLowerCase().includes('sport') || 'payant' in item) {
         itemsByType.equipements++
-      } else if (item.type.toLowerCase().includes('fontaine') || 'etat' in item) {
+      }
+      else if (item.type.toLowerCase().includes('fontaine') || 'etat' in item) {
         itemsByType.fontaines++
-      } else {
+      }
+      else {
         itemsByType.espaces++
       }
     }
@@ -72,7 +74,8 @@ function refreshMap() {
 function centerOnParis() {
   if (selectedItem && mapView.value) {
     mapView.value.flyToLocation(selectedItem.latitude || 48.8566, selectedItem.longitude || 2.3522)
-  } else if (mapView.value) {
+  }
+  else if (mapView.value) {
     mapView.value.flyToLocation(48.8566, 2.3522)
   }
 }
@@ -88,28 +91,28 @@ watch(() => props.open, (newOpen) => {
 })
 
 function handleSearchUpdate(value: string) {
-  const newFilters = { ...props.filters, search: value }
-  emit('update:filters', newFilters)
+  const newFilters = { ...props.mapFilters, search: value }
+  emit('update:mapFilters', newFilters)
 }
 
 function handleTypesUpdate(value: string[]) {
-  const newFilters = { ...props.filters, types: value }
-  emit('update:filters', newFilters)
+  const newFilters = { ...props.mapFilters, types: value }
+  emit('update:mapFilters', newFilters)
 }
 
 function handleCategoriesUpdate(value: string[]) {
-  const newFilters = { ...props.filters, categories: value }
-  emit('update:filters', newFilters)
+  const newFilters = { ...props.mapFilters, categories: value }
+  emit('update:mapFilters', newFilters)
 }
 
 function handleArrondissementsUpdate(value: string[]) {
-  const newFilters = { ...props.filters, arrondissements: value }
-  emit('update:filters', newFilters)
+  const newFilters = { ...props.mapFilters, arrondissements: value }
+  emit('update:mapFilters', newFilters)
 }
 
 function handleEtatsUpdate(value: string[]) {
-  const newFilters = { ...props.filters, etats: value }
-  emit('update:filters', newFilters)
+  const newFilters = { ...props.mapFilters, etats: value }
+  emit('update:mapFilters', newFilters)
 }
 
 function handleFiltersReset() {
@@ -120,7 +123,7 @@ function handleFiltersReset() {
     arrondissements: [],
     etats: [],
   }
-  emit('update:filters', resetFilters)
+  emit('update:mapFilters', resetFilters)
 }
 
 const showCategorieFilter = computed(() => props.currentStore === 'espaces-verts')
@@ -129,30 +132,36 @@ const showEtatFilter = computed(() => props.currentStore === 'fontaines')
 
 <template>
   <Dialog v-model:open="isOpen">
-    <DialogContent class="max-w-7xl w-[95vw] h-[90vh] p-0 gap-0">
-      <DialogHeader class="px-6 py-4 border-b bg-background">
+    <DialogContent class="h-[90vh] max-w-7xl w-[95vw] gap-0 p-0">
+      <DialogHeader class="border-b bg-background px-6 py-4">
         <div class="flex items-center justify-between">
           <div class="space-y-1">
-            <DialogTitle class="text-xl font-bold font-nexa text-quantic">
+            <DialogTitle class="text-quantic text-xl font-bold font-nexa">
               {{ title }}
             </DialogTitle>
             <DialogDescription class="text-sm text-muted-foreground">
               {{ stats.total }} élément{{ stats.total > 1 ? 's' : '' }} affiché{{ stats.total > 1 ? 's' : '' }} sur la carte
             </DialogDescription>
           </div>
-          
+
           <div class="flex items-center gap-3">
             <div v-if="stats.equipements > 0" class="flex items-center gap-1 text-xs">
               <Icon name="i-lucide-dumbbell" class="h-4 w-4 text-blue-600" />
-              <Badge variant="secondary" class="text-xs">{{ stats.equipements }}</Badge>
+              <Badge variant="secondary" class="text-xs">
+                {{ stats.equipements }}
+              </Badge>
             </div>
             <div v-if="stats.espaces > 0" class="flex items-center gap-1 text-xs">
               <Icon name="i-lucide-leaf" class="h-4 w-4 text-green-600" />
-              <Badge variant="secondary" class="text-xs">{{ stats.espaces }}</Badge>
+              <Badge variant="secondary" class="text-xs">
+                {{ stats.espaces }}
+              </Badge>
             </div>
             <div v-if="stats.fontaines > 0" class="flex items-center gap-1 text-xs">
               <Icon name="i-lucide-droplets" class="h-4 w-4 text-cyan-600" />
-              <Badge variant="secondary" class="text-xs">{{ stats.fontaines }}</Badge>
+              <Badge variant="secondary" class="text-xs">
+                {{ stats.fontaines }}
+              </Badge>
             </div>
           </div>
         </div>
@@ -160,7 +169,7 @@ const showEtatFilter = computed(() => props.currentStore === 'fontaines')
 
       <Collapsible class="border-b">
         <CollapsibleTrigger as-child>
-          <Button variant="ghost" class="w-full justify-between px-6 py-3 h-auto">
+          <Button variant="ghost" class="h-auto w-full justify-between px-6 py-3">
             <div class="flex items-center gap-2">
               <Icon name="i-lucide-filter" class="h-4 w-4" />
               <span class="font-medium">Filtrer les données</span>
@@ -170,11 +179,11 @@ const showEtatFilter = computed(() => props.currentStore === 'fontaines')
         </CollapsibleTrigger>
         <CollapsibleContent class="px-6 pb-4">
           <DataFilters
-            :search="filters.search || ''"
-            :selected-types="filters.types || []"
-            :selected-categories="filters.categories || []"
-            :selected-arrondissements="filters.arrondissements || []"
-            :selected-etats="filters.etats || []"
+            :search="mapFilters.search || ''"
+            :selected-types="mapFilters.types || []"
+            :selected-categories="mapFilters.categories || []"
+            :selected-arrondissements="mapFilters.arrondissements || []"
+            :selected-etats="mapFilters.etats || []"
             :type-options="filterOptions.types || []"
             :categorie-options="filterOptions.categories || []"
             :arrondissement-options="filterOptions.arrondissements || []"
@@ -191,19 +200,23 @@ const showEtatFilter = computed(() => props.currentStore === 'fontaines')
         </CollapsibleContent>
       </Collapsible>
 
-      <div class="flex-1 p-6 bg-muted/20">
+      <div class="flex-1 bg-muted/20 p-6">
         <div v-if="loading" class="h-full flex items-center justify-center">
           <div class="text-center space-y-4">
-            <Icon name="i-lucide-loader-2" class="h-8 w-8 animate-spin text-quantic mx-auto" />
-            <p class="text-muted-foreground">Chargement de la carte...</p>
+            <Icon name="i-lucide-loader-2" class="text-quantic mx-auto h-8 w-8 animate-spin" />
+            <p class="text-muted-foreground">
+              Chargement de la carte...
+            </p>
           </div>
         </div>
-        
+
         <div v-else-if="items.length === 0" class="h-full flex items-center justify-center">
           <div class="text-center space-y-4">
-            <Icon name="i-lucide-map-pin-off" class="h-12 w-12 text-muted-foreground mx-auto" />
+            <Icon name="i-lucide-map-pin-off" class="mx-auto h-12 w-12 text-muted-foreground" />
             <div>
-              <h3 class="text-lg font-medium">Aucune donnée à afficher</h3>
+              <h3 class="text-lg font-medium">
+                Aucune donnée à afficher
+              </h3>
               <p class="text-sm text-muted-foreground">
                 Aucun élément ne correspond aux filtres actuels
               </p>
@@ -215,33 +228,33 @@ const showEtatFilter = computed(() => props.currentStore === 'fontaines')
           v-else
           ref="mapView"
           :items="items"
-          :height="'calc(90vh - 200px)'"
+          height="calc(90vh - 200px)"
           :zoom="selectedItem ? 14 : 12"
           :center="selectedItem ? [selectedItem.latitude || 48.8566, selectedItem.longitude || 2.3522] : [48.8566, 2.3522]"
           :show-clusters="!selectedItem"
-          class="rounded-lg overflow-hidden border"
+          class="overflow-hidden border rounded-lg"
         />
       </div>
 
-      <div class="px-6 py-4 border-t bg-background flex items-center justify-between">
+      <div class="flex items-center justify-between border-t bg-background px-6 py-4">
         <div class="flex items-center gap-2">
           <Button
             variant="outline"
             size="sm"
-            @click="refreshMap"
             :disabled="loading || items.length === 0"
+            @click="refreshMap"
           >
-            <Icon name="i-lucide-refresh" class="w-4 h-4 mr-2" />
+            <Icon name="i-lucide-refresh" class="mr-2 h-4 w-4" />
             Actualiser
           </Button>
-          
+
           <Button
             variant="outline"
             size="sm"
-            @click="centerOnParis"
             :disabled="loading || items.length === 0"
+            @click="centerOnParis"
           >
-            <Icon name="i-lucide-home" class="w-4 h-4 mr-2" />
+            <Icon name="i-lucide-home" class="mr-2 h-4 w-4" />
             {{ selectedItem ? 'Centrer sur le point' : 'Centrer sur Paris' }}
           </Button>
         </div>

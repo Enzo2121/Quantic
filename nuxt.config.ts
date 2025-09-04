@@ -25,7 +25,6 @@ export default defineNuxtConfig({
   },
 
   features: {
-    // For UnoCSS
     inlineStyles: false,
   },
 
@@ -35,17 +34,13 @@ export default defineNuxtConfig({
     },
   },
 
-  // ✅ OPTIMISATIONS LAZY LOADING selon doc officielle
   experimental: {
-    // Active les stratégies d'hydratation intelligentes
     lazyHydration: true,
-    // Optimise le payload pour les composants lazy
     payloadExtraction: true,
   },
 
   routeRules: {
-    // Dashboard avec cache intelligent
-    '/dashboard': { 
+    '/pointFrais': {
       ssr: true,
       headers: { 'cache-control': 's-maxage=60' }
     },

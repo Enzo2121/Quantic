@@ -30,6 +30,10 @@
   border-color: var(--quantic-primary); 
 }
 
+.hover\:bg-quantic:hover {
+  background-color: var(--quantic-primary);
+}
+
 .hover\:bg-quantic\/90:hover {
   background-color: rgba(95, 37, 159, 0.9);
 }

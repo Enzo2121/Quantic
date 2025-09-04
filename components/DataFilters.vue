@@ -160,27 +160,10 @@ function clearAll() {
       </div>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
       <div class="space-y-2">
         <Label>Type</Label>
 
-        <div v-if="selectedTypes.length > 0" class="flex flex-wrap gap-1 mb-2">
-          <Badge
-            v-for="type in selectedTypes"
-            :key="type"
-            variant="secondary"
-            class="cursor-pointer hover:bg-destructive hover:text-destructive-foreground"
-            @click="removeTypeOption(type)"
-          >
-            {{ type }}
-            <Icon name="i-lucide-x" class="ml-1 h-3 w-3" />
-          </Badge>
-          <Button v-if="selectedTypes.length > 1" variant="ghost" size="sm" @click="clearTypes">
-            Tout effacer
-          </Button>
-        </div>
-
-        <!-- Select -->
         <Popover v-model:open="isTypeOpen">
           <PopoverTrigger as-child>
             <Button
@@ -227,30 +210,27 @@ function clearAll() {
             </Command>
           </PopoverContent>
         </Popover>
-      </div>
 
-      <!-- Filtre par categorie -->
-      <div v-if="showCategorieFilter" class="space-y-2">
-        <Label>Catégorie</Label>
-
-        <!-- Selected chips -->
-        <div v-if="selectedCategories.length > 0" class="flex flex-wrap gap-1 mb-2">
+        <div v-if="selectedTypes.length > 0" class="flex flex-wrap gap-1">
           <Badge
-            v-for="categorie in selectedCategories"
-            :key="categorie"
+            v-for="type in selectedTypes"
+            :key="type"
             variant="secondary"
-            class="cursor-pointer hover:bg-destructive hover:text-destructive-foreground"
-            @click="removeCategorieOption(categorie)"
+            class="cursor-pointer hover:bg-quantic hover:text-white"
+            @click="removeTypeOption(type)"
           >
-            {{ categorie }}
+            {{ type }}
             <Icon name="i-lucide-x" class="ml-1 h-3 w-3" />
           </Badge>
-          <Button v-if="selectedCategories.length > 1" variant="ghost" size="sm" @click="clearCategories">
+          <Button v-if="selectedTypes.length > 1" variant="ghost" size="sm" @click="clearTypes">
             Tout effacer
           </Button>
         </div>
+      </div>
 
-        <!-- Select -->
+      <div v-if="showCategorieFilter" class="space-y-2">
+        <Label>Catégorie</Label>
+
         <Popover v-model:open="isCategorieOpen">
           <PopoverTrigger as-child>
             <Button
@@ -297,28 +277,26 @@ function clearAll() {
             </Command>
           </PopoverContent>
         </Popover>
-      </div>
 
-      <!-- Filtre par arrondissement -->
-      <div class="space-y-2">
-        <Label>Arrondissement</Label>
-
-        <!-- Selected chips -->
-        <div v-if="selectedArrondissements.length > 0" class="flex flex-wrap gap-1 mb-2">
+        <div v-if="selectedCategories.length > 0" class="flex flex-wrap gap-1">
           <Badge
-            v-for="arr in selectedArrondissements"
-            :key="arr"
+            v-for="categorie in selectedCategories"
+            :key="categorie"
             variant="secondary"
-            class="cursor-pointer hover:bg-destructive hover:text-destructive-foreground"
-            @click="removeArrondissementOption(arr)"
+            class="cursor-pointer hover:bg-quantic hover:text-white"
+            @click="removeCategorieOption(categorie)"
           >
-            {{ arr }}
+            {{ categorie }}
             <Icon name="i-lucide-x" class="ml-1 h-3 w-3" />
           </Badge>
-          <Button v-if="selectedArrondissements.length > 1" variant="ghost" size="sm" @click="clearArrondissements">
+          <Button v-if="selectedCategories.length > 1" variant="ghost" size="sm" @click="clearCategories">
             Tout effacer
           </Button>
         </div>
+      </div>
+
+      <div class="space-y-2">
+        <Label>Arrondissement</Label>
 
         <Popover v-model:open="isArrondissementOpen">
           <PopoverTrigger as-child>
@@ -366,85 +344,100 @@ function clearAll() {
             </Command>
           </PopoverContent>
         </Popover>
-      </div>
 
-      <!-- Filtre par état (optionnel) -->
-      <div v-if="showEtatFilter" class="space-y-2">
-        <Label>État</Label>
-
-        <!-- Selected chips -->
-        <div v-if="selectedEtats.length > 0" class="flex flex-wrap gap-1 mb-2">
+        <div v-if="selectedArrondissements.length > 0" class="flex flex-wrap gap-1">
           <Badge
-            v-for="etat in selectedEtats"
-            :key="etat"
+            v-for="arr in selectedArrondissements"
+            :key="arr"
             variant="secondary"
-            class="cursor-pointer hover:bg-destructive hover:text-destructive-foreground"
-            @click="removeEtatOption(etat)"
+            class="cursor-pointer hover:bg-quantic hover:text-white"
+            @click="removeArrondissementOption(arr)"
           >
-            {{ etat }}
+            {{ arr }}
             <Icon name="i-lucide-x" class="ml-1 h-3 w-3" />
           </Badge>
-          <Button v-if="selectedEtats.length > 1" variant="ghost" size="sm" @click="clearEtats">
+          <Button v-if="selectedArrondissements.length > 1" variant="ghost" size="sm" @click="clearArrondissements">
             Tout effacer
           </Button>
         </div>
-
-        <!-- Select -->
-        <Popover v-model:open="isEtatOpen">
-          <PopoverTrigger as-child>
-            <Button
-              variant="outline"
-              role="combobox"
-              :aria-expanded="isEtatOpen"
-              :disabled="isLoadingOptions"
-              class="w-full justify-between"
-            >
-              <span v-if="isLoadingOptions" class="text-muted-foreground flex items-center">
-                <Icon name="i-lucide-loader-2" class="mr-2 h-4 w-4 animate-spin" />
-                Chargement des options...
-              </span>
-              <span v-else-if="selectedEtats.length === 0" class="text-muted-foreground">
-                Sélectionner un état...
-              </span>
-              <span v-else-if="selectedEtats.length === 1">
-                {{ selectedEtats[0] }}
-              </span>
-              <span v-else>
-                {{ selectedEtats.length }} sélectionné(s)
-              </span>
-              <Icon v-if="!isLoadingOptions" name="i-lucide-chevrons-up-down" class="ml-2 h-4 w-4 shrink-0 opacity-50" />
-            </Button>
-          </PopoverTrigger>
-
-          <PopoverContent class="w-full p-0" align="start">
-            <Command>
-              <CommandGroup class="max-h-48 overflow-auto">
-                <CommandItem
-                  v-for="option in etatOptions"
-                  :key="option.value"
-                  :value="option.value"
-                  @select="toggleEtatOption(option.value)"
-                >
-                  <Icon
-                    :name="selectedEtats.includes(option.value) ? 'i-lucide-check' : 'i-lucide-circle'"
-                    class="mr-2 h-4 w-4"
-                    :class="{ 'opacity-0': !selectedEtats.includes(option.value) }"
-                  />
-                  <span>{{ option.label }}</span>
-                </CommandItem>
-              </CommandGroup>
-            </Command>
-          </PopoverContent>
-        </Popover>
       </div>
-    </div>
 
-    <!-- Bouton de réinitialisation -->
-    <div class="flex justify-end">
-      <Button variant="outline" @click="clearAll">
-        <Icon name="i-lucide-rotate-ccw" class="mr-2 h-4 w-4" />
-        Réinitialiser les filtres
-      </Button>
+      <div class="space-y-2">
+        <Label v-if="showEtatFilter">État</Label>
+        <Label v-else>&nbsp;</Label>
+
+        <div v-if="showEtatFilter" class="space-y-2">
+          <Popover v-model:open="isEtatOpen">
+            <PopoverTrigger as-child>
+              <Button
+                variant="outline"
+                role="combobox"
+                :aria-expanded="isEtatOpen"
+                :disabled="isLoadingOptions"
+                class="w-full justify-between"
+              >
+                <span v-if="isLoadingOptions" class="text-muted-foreground flex items-center">
+                  <Icon name="i-lucide-loader-2" class="mr-2 h-4 w-4 animate-spin" />
+                  Chargement des options...
+                </span>
+                <span v-else-if="selectedEtats.length === 0" class="text-muted-foreground">
+                  Sélectionner un état...
+                </span>
+                <span v-else-if="selectedEtats.length === 1">
+                  {{ selectedEtats[0] }}
+                </span>
+                <span v-else>
+                  {{ selectedEtats.length }} sélectionné(s)
+                </span>
+                <Icon v-if="!isLoadingOptions" name="i-lucide-chevrons-up-down" class="ml-2 h-4 w-4 shrink-0 opacity-50" />
+              </Button>
+            </PopoverTrigger>
+
+            <PopoverContent class="w-full p-0" align="start">
+              <Command>
+                <CommandGroup class="max-h-48 overflow-auto">
+                  <CommandItem
+                    v-for="option in etatOptions"
+                    :key="option.value"
+                    :value="option.value"
+                    @select="toggleEtatOption(option.value)"
+                  >
+                    <Icon
+                      :name="selectedEtats.includes(option.value) ? 'i-lucide-check' : 'i-lucide-circle'"
+                      class="mr-2 h-4 w-4"
+                      :class="{ 'opacity-0': !selectedEtats.includes(option.value) }"
+                    />
+                    <span>{{ option.label }}</span>
+                  </CommandItem>
+                </CommandGroup>
+              </Command>
+            </PopoverContent>
+          </Popover>
+
+          <div v-if="selectedEtats.length > 0" class="flex flex-wrap gap-1">
+            <Badge
+              v-for="etat in selectedEtats"
+              :key="etat"
+              variant="secondary"
+              class="cursor-pointer hover:bg-quantic hover:text-white"
+              @click="removeEtatOption(etat)"
+            >
+              {{ etat }}
+              <Icon name="i-lucide-x" class="ml-1 h-3 w-3" />
+            </Badge>
+            <Button v-if="selectedEtats.length > 1" variant="ghost" size="sm" @click="clearEtats">
+              Tout effacer
+            </Button>
+          </div>
+        </div>
+
+        <div class="flex flex-col items-start gap-2" :class="{ 'mt-6': !showEtatFilter }">
+          <Button variant="outline" @click="clearAll" class="w-full px-0">
+            <Icon name="i-lucide-trash-2" class="mr-2 h-4 w-4" />
+            Supprimer les filtres
+          </Button>
+        </div>
+      </div>
     </div>
   </div>
 </template>
