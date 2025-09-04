@@ -224,7 +224,7 @@ onMounted(async () => {
       </TabsContent>
 
       <TabsContent value="distribution" class="space-y-6">
-        <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+        <div class="grid grid-cols-1 xl:grid-cols-2 gap-6 min-h-[465px]">
           <EquipmentsByTypeChart
             :data="barData"
             title="Équipements sportifs par type"
