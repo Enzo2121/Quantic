@@ -13,5 +13,11 @@ export const useEquipementsSportifsStore = defineStore('equipements-sportifs', (
     },
     filterFields: ['types', 'arrondissements'],
     storeKey: 'equipements-sportifs',
+    lazyLoading: {
+      initialLoadSize: 20,
+      mediumLoadSize: 200,
+      fullLoadSize: 1000,
+      autoLoadOnSearch: true,
+    },
   })
 })

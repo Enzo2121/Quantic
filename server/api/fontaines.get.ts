@@ -1,14 +1,38 @@
 function formatArrondissement(commune: string | undefined): string {
   if (!commune) return 'Arrondissement non défini'
 
-  // Format: "PARIS 1ER ARRONDISSEMENT" -> "75001"
   const arrMatch = commune.match(/PARIS (\d+)(?:ER|EME)? ARRONDISSEMENT/)
   if (arrMatch) {
     const num = parseInt(arrMatch[1])
-    return `750${num.toString().padStart(2, '0')}`
+    return formatDistrictNumber(num)
   }
 
   return 'Arrondissement non défini'
+}
+
+function formatDistrictNumber(num: number): string {
+  if (num === 1) {
+    return '1er'
+  } else if (num >= 2 && num <= 20) {
+    return `${num}ème`
+  }
+  return `${num}ème`
+}
+
+function convertDisplayToApiFormat(arrondissement: string): string {
+  if (arrondissement.match(/^750\d{2}$/)) {
+    return arrondissement
+  }
+
+  const numMatch = arrondissement.match(/^(\d+)(?:er|ème)$/)
+  if (numMatch) {
+    const num = parseInt(numMatch[1])
+    if (num >= 1 && num <= 20) {
+      return num === 1 ? '1ER' : `${num}EME`
+    }
+  }
+
+  return arrondissement
 }
 
 export default defineCachedEventHandler(async (event) => {
@@ -24,15 +48,10 @@ export default defineCachedEventHandler(async (event) => {
   console.log('🔄 API Route - Fontaines:', { page, pageSize, search, types: types.length, etats: etats.length })
 
   try {
-    // Optimisation : si on a des filtres actifs, on peut utiliser un pageSize normal
-    // Si pas de filtres, on peut charger plus de données pour permettre la recherche globale
-    const hasFilters = types.length > 0 || etats.length > 0 || arrondissements.length > 0 || search.length > 0
-    const effectivePageSize = hasFilters ? pageSize : Math.max(pageSize, 1000) // Charger plus de données si pas de filtres
-
     const params = new URLSearchParams({
       dataset: 'fontaines-a-boire',
-      rows: String(effectivePageSize),
-      start: String((page - 1) * pageSize), // Garder la pagination côté client
+      rows: String(pageSize),
+      start: String((page - 1) * pageSize),
       facet: ['type_objet', 'dispo', 'commune'].join(',')
     })
 
@@ -54,7 +73,8 @@ export default defineCachedEventHandler(async (event) => {
 
     if (arrondissements.length > 0) {
       arrondissements.forEach(arr => {
-        params.append('refine.commune', `PARIS ${arr} EME ARRONDISSEMENT`)
+        const apiFormat = convertDisplayToApiFormat(arr)
+        params.append('refine.commune', `PARIS ${apiFormat} ARRONDISSEMENT`)
       })
     }
 

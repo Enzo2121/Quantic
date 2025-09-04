@@ -28,6 +28,7 @@ const emit = defineEmits<{
   'update:page': [page: number]
   'update:pageSize': [pageSize: number]
   'update:sort': [sortBy: string, sortOrder: 'asc' | 'desc']
+  'open-map-modal': [item: T]
 }>()
 
 function handleSort(column: string) {
@@ -42,10 +43,28 @@ function getSortIcon(column: string) {
 
 function viewDetails(item: T) {
   console.log('Voir détails:', item)
+  // Ouvrir la modal de carte avec le point sélectionné
+  emit('open-map-modal', item)
 }
 
-function openMap(item: T) {
-  console.log('Ouvrir carte:', item)
+
+function openDirections(item: T) {
+  console.log('Ouvrir itinéraire:', item)
+  // Ouvrir Google Maps avec l'itinéraire vers le lieu
+  const lat = (item as any).latitude
+  const lng = (item as any).longitude
+  const address = (item as any).adresse || (item as any).nom
+
+  if (lat && lng) {
+    // Utiliser les coordonnées pour l'itinéraire
+    const url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`
+    window.open(url, '_blank')
+  } else if (address) {
+    // Utiliser l'adresse pour l'itinéraire
+    const encodedAddress = encodeURIComponent(`${address}, Paris, France`)
+    const url = `https://www.google.com/maps/dir/?api=1&destination=${encodedAddress}`
+    window.open(url, '_blank')
+  }
 }
 
 const pageSizeOptions = [10, 20, 50, 100]
@@ -96,13 +115,15 @@ const pageSizeOptions = [10, 20, 50, 100]
                     variant="ghost"
                     size="sm"
                     @click="viewDetails(item)"
+                    title="Voir sur la carte"
                   >
                     <Icon name="i-lucide-eye" class="h-4 w-4" />
                   </Button>
                   <Button
                     variant="ghost"
                     size="sm"
-                    @click="openMap(item)"
+                    @click="openDirections(item)"
+                    title="Obtenir l'itinéraire"
                   >
                     <Icon name="i-lucide-map-pin" class="h-4 w-4" />
                   </Button>

@@ -13,6 +13,12 @@ export const useEspacesVertsStore = defineStore('espaces-verts', () => {
       arrondissements: []
     },
     filterFields: ['types', 'categories', 'arrondissements'],
-    storeKey: 'espaces-verts'
+    storeKey: 'espaces-verts',
+    lazyLoading: {
+      initialLoadSize: 20,
+      mediumLoadSize: 200,
+      fullLoadSize: 1000,
+      autoLoadOnSearch: true,
+    },
   })
 })

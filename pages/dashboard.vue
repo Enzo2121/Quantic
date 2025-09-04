@@ -23,111 +23,16 @@ const { getEquipementCellValue, getEspaceVertCellValue, getFontaineCellValue, eq
 
 const activeTab = ref('equipements')
 
-watch(activeTab, async (newTab) => {
-  if (newTab === 'equipements') {
-    await prefetchComponents(['LazyDataTable'])
-  }
-})
 
-const showSports = ref(true)
-const showParks = ref(true)
-const showFountains = ref(true)
-const selectedDistrict = ref('all')
-const mapCenter = ref<[number, number]>([48.8566, 2.3522])
-const mapView = ref()
 
 const isMapModalOpen = ref(false)
+const selectedMapItem = ref<any>(null)
 
-const districtOptions = [
-  '75001',
-  '75002',
-  '75003',
-  '75004',
-  '75005',
-  '75006',
-  '75007',
-  '75008',
-  '75009',
-  '75010',
-  '75011',
-  '75012',
-  '75013',
-  '75014',
-  '75015',
-  '75016',
-  '75017',
-  '75018',
-  '75019',
-  '75020',
-]
 
-const filteredMapItems = computed(() => {
-  const items: any[] = []
-
-  if (showSports.value && equipementsStore.isLoaded && equipementsStore.currentPageData.length > 0) {
-    items.push(...equipementsStore.currentPageData)
-  }
-
-  if (showParks.value && espacesVertsStore.isLoaded && espacesVertsStore.currentPageData.length > 0) {
-    items.push(...espacesVertsStore.currentPageData)
-  }
-
-  if (showFountains.value && fontainesStore.isLoaded && fontainesStore.currentPageData.length > 0) {
-    items.push(...fontainesStore.currentPageData)
-  }
-
-  return items
-})
-
-async function refreshMap() {
-  console.warn('Actualisation de la carte...')
-
-  if (showSports.value && !equipementsStore.isLoaded) {
-    await equipementsStore.fetchPage(1)
-  }
-  if (showParks.value && !espacesVertsStore.isLoaded) {
-    await espacesVertsStore.fetchPage(1)
-  }
-  if (showFountains.value && !fontainesStore.isLoaded) {
-    await fontainesStore.fetchPage(1)
-  }
-
-  mapCenter.value = [48.8566, 2.3522]
-
-  setTimeout(() => {
-    if (mapView.value) {
-      mapView.value.flyToLocation(48.8566, 2.3522)
-    }
-  }, 100)
-
-  setTimeout(() => {
-    if (mapView.value) {
-      mapView.value.invalidateSize()
-    }
-  }, 200)
-}
-
-function centerOnParis() {
-  mapCenter.value = [48.8566, 2.3522]
-  if (mapView.value) {
-    mapView.value.flyToLocation(48.8566, 2.3522)
-  }
-}
 
 onMounted(async () => {
   try {
     await initializeStores()
-
-    if (activeTab.value === 'carte') {
-      console.warn('Centrage initial sur Paris (onMounted)')
-      mapCenter.value = [48.8566, 2.3522]
-
-      setTimeout(() => {
-        if (mapView.value) {
-          mapView.value.flyToLocation(48.8566, 2.3522)
-        }
-      }, 500)
-    }
   } catch (error) {
     console.error('Erreur lors de l\'initialisation:', error)
   }
@@ -140,29 +45,6 @@ watch(activeTab, async (newTab) => {
 
   if (newTab === 'fontaines') {
     await loadStoreData('fontaines')
-  }
-
-  if (newTab === 'carte') {
-    console.warn('Navigation vers onglet Carte Interactive')
-
-    nextTick(async () => {
-      await refreshMap()
-
-      setTimeout(() => {
-        console.warn('Centrage automatique sur Paris (délai)')
-        mapCenter.value = [48.8566, 2.3522]
-
-        if (mapView.value) {
-          mapView.value.flyToLocation(48.8566, 2.3522)
-        }
-
-        setTimeout(() => {
-          if (mapView.value) {
-            mapView.value.invalidateSize()
-          }
-        }, 200)
-      }, 300)
-    })
   }
 })
 
@@ -192,6 +74,10 @@ function handleEquipementsPageSize(pageSize: number) {
 
 function handleEquipementsReset() {
   equipementsStore.reset()
+}
+
+async function handleLoadMoreEquipements(mode: 'medium' | 'full') {
+  await equipementsStore.loadMoreData(mode)
 }
 
 async function handleEspacesVertsSearch(value: string) {
@@ -226,6 +112,10 @@ function handleEspacesVertsReset() {
   espacesVertsStore.reset()
 }
 
+async function handleLoadMoreEspacesVerts(mode: 'medium' | 'full') {
+  await espacesVertsStore.loadMoreData(mode)
+}
+
 async function handleFontainesSearch(value: string) {
   await fontainesStore.updateFilters({ search: value })
 }
@@ -256,6 +146,10 @@ function handleFontainesPageSize(pageSize: number) {
 
 function handleFontainesReset() {
   fontainesStore.reset()
+}
+
+async function handleLoadMoreFontaines(mode: 'medium' | 'full') {
+  await fontainesStore.loadMoreData(mode)
 }
 
 const showFloatingButton = computed(() =>
@@ -304,6 +198,12 @@ const mapModalTitle = computed(() =>
 )
 
 function openMapModal() {
+  selectedMapItem.value = null // Afficher tous les items
+  isMapModalOpen.value = true
+}
+
+function handleOpenMapModal(item: any) {
+  selectedMapItem.value = item // Afficher seulement cet item
   isMapModalOpen.value = true
 }
 
@@ -338,7 +238,7 @@ async function handleModalFiltersUpdate(newFilters: any) {
 
 
     <Tabs v-model="activeTab" class="w-full">
-      <TabsList class="grid w-full grid-cols-4 h-16 p-2">
+      <TabsList class="grid w-full grid-cols-3 h-16 p-2">
         <TabsTrigger
           value="equipements"
           class="flex items-center gap-3 px-6 py-4 text-base font-medium"
@@ -349,14 +249,6 @@ async function handleModalFiltersUpdate(newFilters: any) {
           <Badge variant="secondary" class="ml-2">
             {{ stats.equipements.total }}
           </Badge>
-        </TabsTrigger>
-        <TabsTrigger
-          value="carte"
-          class="flex items-center gap-3 px-6 py-4 text-base font-medium"
-        >
-          <Icon name="i-lucide-map" class="h-5 w-5" />
-          <span class="hidden sm:inline">Carte interactive</span>
-          <span class="sm:hidden">Carte</span>
         </TabsTrigger>
         <TabsTrigger
           value="espaces-verts"
@@ -401,6 +293,7 @@ async function handleModalFiltersUpdate(newFilters: any) {
                 :selected-arrondissements="equipementsStore.filters.arrondissements"
                 :type-options="equipementsStore.filterOptions.types"
                 :arrondissement-options="equipementsStore.filterOptions.arrondissements"
+                :is-loading-options="equipementsStore.isLoadingOptions"
                 @update:search="handleEquipementsSearch"
                 @update:selected-types="handleEquipementsTypes"
                 @update:selected-arrondissements="handleEquipementsArrondissements"
@@ -425,116 +318,26 @@ async function handleModalFiltersUpdate(newFilters: any) {
                 @update:page="handleEquipementsPage"
                 @update:page-size="handleEquipementsPageSize"
                 @update:sort="handleEquipementsSort"
+                @open-map-modal="handleOpenMapModal"
               />
             </LoadingState>
-          </CardContent>
-        </Card>
-      </TabsContent>
 
-      <TabsContent value="carte" class="space-y-6">
-        <Card>
-          <CardHeader>
-            <CardTitle class="flex items-center gap-2">
-              <Icon name="i-lucide-map" class="h-5 w-5" />
-              Carte Interactive de Paris
-            </CardTitle>
-            <CardDescription>
-              Visualisez tous les équipements sportifs, espaces verts et fontaines sur une carte interactive
-            </CardDescription>
-          </CardHeader>
-          <CardContent class="space-y-6">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div class="space-y-2">
-                <Label>Type d'équipements à afficher</Label>
-                <div class="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    :class="{ 'bg-violet-100 border-violet-300': showSports }"
-                    @click="showSports = !showSports"
-                  >
-                    <Icon name="i-lucide-dumbbell" class="w-4 h-4 mr-2" />
-                    Sports
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    :class="{ 'bg-green-100 border-green-300': showParks }"
-                    @click="showParks = !showParks"
-                  >
-                    <Icon name="i-lucide-leaf" class="w-4 h-4 mr-2" />
-                    Parcs
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    :class="{ 'bg-blue-100 border-blue-300': showFountains }"
-                    @click="showFountains = !showFountains"
-                  >
-                    <Icon name="i-lucide-droplets" class="w-4 h-4 mr-2" />
-                    Fontaines
-                  </Button>
-                </div>
-              </div>
-
-              <div class="space-y-2">
-                <Label>Filtre par arrondissement</Label>
-                <Select v-model="selectedDistrict">
-                  <SelectTrigger>
-                    <SelectValue placeholder="Tous les arrondissements" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Tous les arrondissements</SelectItem>
-                    <SelectItem v-for="district in districtOptions" :key="district" :value="district">
-                      {{ district }}
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div class="space-y-2">
-                <Label>Actions</Label>
-                <div class="flex gap-2">
-                  <Button variant="outline" size="sm" @click="refreshMap">
-                    <Icon name="i-lucide-refresh" class="w-4 h-4 mr-2" />
-                    Actualiser
-                  </Button>
-                  <Button variant="outline" size="sm" @click="centerOnParis">
-                    <Icon name="i-lucide-home" class="w-4 h-4 mr-2" />
-                    Paris centre
-                  </Button>
-                </div>
-              </div>
-            </div>
-
-            <MapView
-              ref="mapView"
-              :items="filteredMapItems"
-              height="600px"
-              :center="mapCenter"
+            <!-- Bouton Charger Plus pour équipements -->
+            <LoadMoreButton
+              :loading="equipementsStore.isLoadingMore"
+              :loading-mode="equipementsStore.loadingMode"
+              :has-loaded-more="equipementsStore.hasLoadedMore"
+              :can-load-more="equipementsStore.canLoadMore"
+              :total-items="equipementsStore.pagination.total"
+              :current-items="equipementsStore.data.length"
+              :smart-load-suggestion="equipementsStore.smartLoadSuggestion"
+              :has-active-filters="equipementsStore.filterStatus.hasActiveFilters"
+              @load-more="handleLoadMoreEquipements"
             />
-
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div class="text-center p-4 bg-violet-50 rounded-lg">
-                <div class="text-2xl font-bold text-violet-600">{{ filteredMapItems.filter(item => 'payant' in item).length }}</div>
-                <div class="text-sm text-gray-600">Équipements sportifs</div>
-              </div>
-              <div class="text-center p-4 bg-green-50 rounded-lg">
-                <div class="text-2xl font-bold text-green-600">{{ filteredMapItems.filter(item => 'superficie' in item).length }}</div>
-                <div class="text-sm text-gray-600">Espaces verts</div>
-              </div>
-              <div class="text-center p-4 bg-blue-50 rounded-lg">
-                <div class="text-2xl font-bold text-blue-600">{{ filteredMapItems.filter(item => 'etat' in item).length }}</div>
-                <div class="text-sm text-gray-600">Fontaines</div>
-              </div>
-              <div class="text-center p-4 bg-gray-50 rounded-lg">
-                <div class="text-2xl font-bold text-gray-600">{{ filteredMapItems.length }}</div>
-                <div class="text-sm text-gray-600">Total affiché</div>
-              </div>
-            </div>
           </CardContent>
         </Card>
       </TabsContent>
+
 
       <TabsContent value="espaces-verts" class="space-y-6">
         <Card>
@@ -558,6 +361,7 @@ async function handleModalFiltersUpdate(newFilters: any) {
                 :categorie-options="espacesVertsStore.filterOptions.categories"
                 :arrondissement-options="espacesVertsStore.filterOptions.arrondissements"
                 :show-categorie-filter="true"
+                :is-loading-options="espacesVertsStore.isLoadingOptions"
                 @update:search="handleEspacesVertsSearch"
                 @update:selected-types="handleEspacesVertsTypes"
                 @update:selected-categories="handleEspacesVertsCategories"
@@ -583,8 +387,22 @@ async function handleModalFiltersUpdate(newFilters: any) {
                 @update:page="handleEspacesVertsPage"
                 @update:page-size="handleEspacesVertsPageSize"
                 @update:sort="handleEspacesVertsSort"
+                @open-map-modal="handleOpenMapModal"
               />
             </LoadingState>
+
+            <!-- Bouton Charger Plus pour espaces verts -->
+            <LoadMoreButton
+              :loading="espacesVertsStore.isLoadingMore"
+              :loading-mode="espacesVertsStore.loadingMode"
+              :has-loaded-more="espacesVertsStore.hasLoadedMore"
+              :can-load-more="espacesVertsStore.canLoadMore"
+              :total-items="espacesVertsStore.pagination.total"
+              :current-items="espacesVertsStore.data.length"
+              :smart-load-suggestion="espacesVertsStore.smartLoadSuggestion"
+              :has-active-filters="espacesVertsStore.filterStatus.hasActiveFilters"
+              @load-more="handleLoadMoreEspacesVerts"
+            />
           </CardContent>
         </Card>
       </TabsContent>
@@ -611,6 +429,7 @@ async function handleModalFiltersUpdate(newFilters: any) {
                 :arrondissement-options="fontainesStore.filterOptions.arrondissements"
                 :etat-options="fontainesStore.filterOptions.etats"
                 :show-etat-filter="true"
+                :is-loading-options="fontainesStore.isLoadingOptions"
                 @update:search="handleFontainesSearch"
                 @update:selected-types="handleFontainesTypes"
                 @update:selected-arrondissements="handleFontainesArrondissements"
@@ -636,8 +455,22 @@ async function handleModalFiltersUpdate(newFilters: any) {
                 @update:page="handleFontainesPage"
                 @update:page-size="handleFontainesPageSize"
                 @update:sort="handleFontainesSort"
+                @open-map-modal="handleOpenMapModal"
               />
             </LoadingState>
+
+            <!-- Bouton Charger Plus pour fontaines -->
+            <LoadMoreButton
+              :loading="fontainesStore.isLoadingMore"
+              :loading-mode="fontainesStore.loadingMode"
+              :has-loaded-more="fontainesStore.hasLoadedMore"
+              :can-load-more="fontainesStore.canLoadMore"
+              :total-items="fontainesStore.pagination.total"
+              :current-items="fontainesStore.data.length"
+              :smart-load-suggestion="fontainesStore.smartLoadSuggestion"
+              :has-active-filters="fontainesStore.filterStatus.hasActiveFilters"
+              @load-more="handleLoadMoreFontaines"
+            />
           </CardContent>
         </Card>
       </TabsContent>
@@ -652,12 +485,13 @@ async function handleModalFiltersUpdate(newFilters: any) {
 
     <MapModal
       v-model:open="isMapModalOpen"
-      :items="currentStoreData.data"
-      :title="mapModalTitle"
+      :items="selectedMapItem ? [selectedMapItem] : currentStoreData.data"
+      :title="selectedMapItem ? `${selectedMapItem.nom || selectedMapItem.adresse || 'Point sélectionné'}` : mapModalTitle"
       :loading="currentStoreData.loading"
       :current-store="activeTab as 'equipements' | 'espaces-verts' | 'fontaines'"
       :filters="currentStoreData.filters"
       :filter-options="currentStoreData.filterOptions"
+      :selected-item="selectedMapItem"
       @update:filters="handleModalFiltersUpdate"
     />
   </div>

@@ -84,9 +84,8 @@ const districtData = computed(() => {
   const districtCounts: Record<string, { district: string, total: number, equipements: number, espaces: number, fontaines: number, displayName: string }> = {}
 
   for (let i = 1; i <= 20; i++) {
-    const code = `750${i.toString().padStart(2, '0')}`
-    const num = Number.parseInt(i.toString())
-    const displayName = `${num}${num === 1 ? 'er' : 'ème'}`
+    const code = `${i}${i === 1 ? 'er' : 'ème'}`
+    const displayName = code
     districtCounts[code] = { district: code, displayName, total: 0, equipements: 0, espaces: 0, fontaines: 0 }
   }
 
@@ -247,7 +246,6 @@ onMounted(async () => {
           :max-items="10"
         />
 
-        <!-- Tableau détaillé complémentaire -->
         <Card>
           <CardHeader>
             <CardTitle>Détails par arrondissement</CardTitle>

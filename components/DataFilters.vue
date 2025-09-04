@@ -3,7 +3,7 @@ import type { SelectOption } from '~/types/datasets'
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from '@/components/ui/command'
+import { Command, CommandGroup, CommandItem } from '@/components/ui/command'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
@@ -20,6 +20,7 @@ interface Props {
   etatOptions?: SelectOption[]
   showCategorieFilter?: boolean
   showEtatFilter?: boolean
+  isLoadingOptions?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -29,6 +30,7 @@ const props = withDefaults(defineProps<Props>(), {
   etatOptions: () => [],
   showCategorieFilter: false,
   showEtatFilter: false,
+  isLoadingOptions: false,
 })
 
 const emit = defineEmits<{
@@ -185,9 +187,14 @@ function clearAll() {
               variant="outline"
               role="combobox"
               :aria-expanded="isTypeOpen"
+              :disabled="isLoadingOptions"
               class="w-full justify-between"
             >
-              <span v-if="selectedTypes.length === 0" class="text-muted-foreground">
+              <span v-if="isLoadingOptions" class="text-muted-foreground flex items-center">
+                <Icon name="i-lucide-loader-2" class="mr-2 h-4 w-4 animate-spin" />
+                Chargement des options...
+              </span>
+              <span v-else-if="selectedTypes.length === 0" class="text-muted-foreground">
                 Sélectionner un type...
               </span>
               <span v-else-if="selectedTypes.length === 1">
@@ -196,14 +203,12 @@ function clearAll() {
               <span v-else>
                 {{ selectedTypes.length }} sélectionné(s)
               </span>
-              <Icon name="i-lucide-chevrons-up-down" class="ml-2 h-4 w-4 shrink-0 opacity-50" />
+              <Icon v-if="!isLoadingOptions" name="i-lucide-chevrons-up-down" class="ml-2 h-4 w-4 shrink-0 opacity-50" />
             </Button>
           </PopoverTrigger>
 
           <PopoverContent class="w-full p-0" align="start">
             <Command>
-              <CommandInput placeholder="Rechercher un type..." />
-              <CommandEmpty>Aucun type trouvé.</CommandEmpty>
               <CommandGroup class="max-h-48 overflow-auto">
                 <CommandItem
                   v-for="option in typeOptions"
@@ -217,9 +222,6 @@ function clearAll() {
                     :class="{ 'opacity-0': !selectedTypes.includes(option.value) }"
                   />
                   <span>{{ option.label }}</span>
-                  <span v-if="option.count" class="ml-auto text-xs text-muted-foreground">
-                    ({{ option.count }})
-                  </span>
                 </CommandItem>
               </CommandGroup>
             </Command>
@@ -255,9 +257,14 @@ function clearAll() {
               variant="outline"
               role="combobox"
               :aria-expanded="isCategorieOpen"
+              :disabled="isLoadingOptions"
               class="w-full justify-between"
             >
-              <span v-if="selectedCategories.length === 0" class="text-muted-foreground">
+              <span v-if="isLoadingOptions" class="text-muted-foreground flex items-center">
+                <Icon name="i-lucide-loader-2" class="mr-2 h-4 w-4 animate-spin" />
+                Chargement des options...
+              </span>
+              <span v-else-if="selectedCategories.length === 0" class="text-muted-foreground">
                 Sélectionner une catégorie...
               </span>
               <span v-else-if="selectedCategories.length === 1">
@@ -266,14 +273,12 @@ function clearAll() {
               <span v-else>
                 {{ selectedCategories.length }} sélectionné(s)
               </span>
-              <Icon name="i-lucide-chevrons-up-down" class="ml-2 h-4 w-4 shrink-0 opacity-50" />
+              <Icon v-if="!isLoadingOptions" name="i-lucide-chevrons-up-down" class="ml-2 h-4 w-4 shrink-0 opacity-50" />
             </Button>
           </PopoverTrigger>
 
           <PopoverContent class="w-full p-0" align="start">
             <Command>
-              <CommandInput placeholder="Rechercher une catégorie..." />
-              <CommandEmpty>Aucune catégorie trouvée.</CommandEmpty>
               <CommandGroup class="max-h-48 overflow-auto">
                 <CommandItem
                   v-for="option in categorieOptions"
@@ -287,9 +292,6 @@ function clearAll() {
                     :class="{ 'opacity-0': !selectedCategories.includes(option.value) }"
                   />
                   <span>{{ option.label }}</span>
-                  <span v-if="option.count" class="ml-auto text-xs text-muted-foreground">
-                    ({{ option.count }})
-                  </span>
                 </CommandItem>
               </CommandGroup>
             </Command>
@@ -318,16 +320,20 @@ function clearAll() {
           </Button>
         </div>
 
-        
         <Popover v-model:open="isArrondissementOpen">
           <PopoverTrigger as-child>
             <Button
               variant="outline"
               role="combobox"
               :aria-expanded="isArrondissementOpen"
+              :disabled="isLoadingOptions"
               class="w-full justify-between"
             >
-              <span v-if="selectedArrondissements.length === 0" class="text-muted-foreground">
+              <span v-if="isLoadingOptions" class="text-muted-foreground flex items-center">
+                <Icon name="i-lucide-loader-2" class="mr-2 h-4 w-4 animate-spin" />
+                Chargement des options...
+              </span>
+              <span v-else-if="selectedArrondissements.length === 0" class="text-muted-foreground">
                 Sélectionner un arrondissement...
               </span>
               <span v-else-if="selectedArrondissements.length === 1">
@@ -336,14 +342,12 @@ function clearAll() {
               <span v-else>
                 {{ selectedArrondissements.length }} sélectionné(s)
               </span>
-              <Icon name="i-lucide-chevrons-up-down" class="ml-2 h-4 w-4 shrink-0 opacity-50" />
+              <Icon v-if="!isLoadingOptions" name="i-lucide-chevrons-up-down" class="ml-2 h-4 w-4 shrink-0 opacity-50" />
             </Button>
           </PopoverTrigger>
 
           <PopoverContent class="w-full p-0" align="start">
             <Command>
-              <CommandInput placeholder="Rechercher un arrondissement..." />
-              <CommandEmpty>Aucun arrondissement trouvé.</CommandEmpty>
               <CommandGroup class="max-h-48 overflow-auto">
                 <CommandItem
                   v-for="option in arrondissementOptions"
@@ -357,9 +361,6 @@ function clearAll() {
                     :class="{ 'opacity-0': !selectedArrondissements.includes(option.value) }"
                   />
                   <span>{{ option.label }}</span>
-                  <span v-if="option.count" class="ml-auto text-xs text-muted-foreground">
-                    ({{ option.count }})
-                  </span>
                 </CommandItem>
               </CommandGroup>
             </Command>
@@ -395,9 +396,14 @@ function clearAll() {
               variant="outline"
               role="combobox"
               :aria-expanded="isEtatOpen"
+              :disabled="isLoadingOptions"
               class="w-full justify-between"
             >
-              <span v-if="selectedEtats.length === 0" class="text-muted-foreground">
+              <span v-if="isLoadingOptions" class="text-muted-foreground flex items-center">
+                <Icon name="i-lucide-loader-2" class="mr-2 h-4 w-4 animate-spin" />
+                Chargement des options...
+              </span>
+              <span v-else-if="selectedEtats.length === 0" class="text-muted-foreground">
                 Sélectionner un état...
               </span>
               <span v-else-if="selectedEtats.length === 1">
@@ -406,14 +412,12 @@ function clearAll() {
               <span v-else>
                 {{ selectedEtats.length }} sélectionné(s)
               </span>
-              <Icon name="i-lucide-chevrons-up-down" class="ml-2 h-4 w-4 shrink-0 opacity-50" />
+              <Icon v-if="!isLoadingOptions" name="i-lucide-chevrons-up-down" class="ml-2 h-4 w-4 shrink-0 opacity-50" />
             </Button>
           </PopoverTrigger>
 
           <PopoverContent class="w-full p-0" align="start">
             <Command>
-              <CommandInput placeholder="Rechercher un état..." />
-              <CommandEmpty>Aucun état trouvé.</CommandEmpty>
               <CommandGroup class="max-h-48 overflow-auto">
                 <CommandItem
                   v-for="option in etatOptions"
@@ -427,9 +431,6 @@ function clearAll() {
                     :class="{ 'opacity-0': !selectedEtats.includes(option.value) }"
                   />
                   <span>{{ option.label }}</span>
-                  <span v-if="option.count" class="ml-auto text-xs text-muted-foreground">
-                    ({{ option.count }})
-                  </span>
                 </CommandItem>
               </CommandGroup>
             </Command>

@@ -9,6 +9,7 @@ interface Props {
   currentStore?: 'equipements' | 'espaces-verts' | 'fontaines'
   filters?: any
   filterOptions?: any
+  selectedItem?: EquipementSportifItem | EspaceVertItem | FontaineItem | null
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -19,6 +20,7 @@ const props = withDefaults(defineProps<Props>(), {
   currentStore: 'equipements',
   filters: () => ({}),
   filterOptions: () => ({}),
+  selectedItem: null,
 })
 
 const emit = defineEmits<{
@@ -68,7 +70,9 @@ function refreshMap() {
 }
 
 function centerOnParis() {
-  if (mapView.value) {
+  if (selectedItem && mapView.value) {
+    mapView.value.flyToLocation(selectedItem.latitude || 48.8566, selectedItem.longitude || 2.3522)
+  } else if (mapView.value) {
     mapView.value.flyToLocation(48.8566, 2.3522)
   }
 }
@@ -212,9 +216,9 @@ const showEtatFilter = computed(() => props.currentStore === 'fontaines')
           ref="mapView"
           :items="items"
           :height="'calc(90vh - 200px)'"
-          :zoom="12"
-          :center="[48.8566, 2.3522]"
-          :show-clusters="true"
+          :zoom="selectedItem ? 14 : 12"
+          :center="selectedItem ? [selectedItem.latitude || 48.8566, selectedItem.longitude || 2.3522] : [48.8566, 2.3522]"
+          :show-clusters="!selectedItem"
           class="rounded-lg overflow-hidden border"
         />
       </div>
@@ -238,7 +242,7 @@ const showEtatFilter = computed(() => props.currentStore === 'fontaines')
             :disabled="loading || items.length === 0"
           >
             <Icon name="i-lucide-home" class="w-4 h-4 mr-2" />
-            Centrer sur Paris
+            {{ selectedItem ? 'Centrer sur le point' : 'Centrer sur Paris' }}
           </Button>
         </div>
 

@@ -1,13 +1,37 @@
 function formatArrondissement(arrondissement: string | undefined): string {
   if (!arrondissement) return 'Arrondissement non défini'
 
-  // Si c'est déjà au format 750XX, retourner tel quel
+  if (arrondissement.match(/^750\d{2}$/)) {
+    const num = parseInt(arrondissement.substring(3))
+    return formatDistrictNumber(num)
+  }
+
+  const numMatch = arrondissement.match(/(\d+)/)
+  if (numMatch) {
+    const num = parseInt(numMatch[1])
+    if (num >= 1 && num <= 20) {
+      return formatDistrictNumber(num)
+    }
+  }
+
+  return 'Arrondissement non défini'
+}
+
+function formatDistrictNumber(num: number): string {
+  if (num === 1) {
+    return '1er'
+  } else if (num >= 2 && num <= 20) {
+    return `${num}ème`
+  }
+  return `${num}ème`
+}
+
+function convertDisplayToApiFormat(arrondissement: string): string {
   if (arrondissement.match(/^750\d{2}$/)) {
     return arrondissement
   }
 
-  // Format: "75001" ou "1" ou "1ER" -> "75001"
-  const numMatch = arrondissement.match(/(\d+)/)
+  const numMatch = arrondissement.match(/^(\d+)(?:er|ème)$/)
   if (numMatch) {
     const num = parseInt(numMatch[1])
     if (num >= 1 && num <= 20) {
@@ -15,7 +39,7 @@ function formatArrondissement(arrondissement: string | undefined): string {
     }
   }
 
-  return 'Arrondissement non défini'
+  return arrondissement
 }
 
 export default defineCachedEventHandler(async (event) => {
@@ -29,15 +53,10 @@ export default defineCachedEventHandler(async (event) => {
 
 
   try {
-    // Optimisation : si on a des filtres actifs, on peut utiliser un pageSize normal
-    // Si pas de filtres, on peut charger plus de données pour permettre la recherche globale
-    const hasFilters = types.length > 0 || arrondissements.length > 0 || search.length > 0
-    const effectivePageSize = hasFilters ? pageSize : Math.max(pageSize, 1000) // Charger plus de données si pas de filtres
-
     const params = new URLSearchParams({
       dataset: 'ilots-de-fraicheur-equipements-activites',
-      rows: String(effectivePageSize),
-      start: String((page - 1) * pageSize), // Garder la pagination côté client
+      rows: String(pageSize),
+      start: String((page - 1) * pageSize),
       facet: ['type', 'payant', 'arrondissement', 'horaires_periode'].join(','),
     })
 
@@ -53,7 +72,8 @@ export default defineCachedEventHandler(async (event) => {
 
     if (arrondissements.length > 0) {
       arrondissements.forEach((arr) => {
-        params.append('refine.arrondissement', arr)
+        const apiFormat = convertDisplayToApiFormat(arr)
+        params.append('refine.arrondissement', apiFormat)
       })
     }
 
