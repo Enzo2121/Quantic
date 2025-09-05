@@ -1,11 +1,10 @@
 <script setup lang="ts">
-import { VisXYContainer, VisStackedBar, VisTooltip, VisCrosshair } from '@unovis/vue'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import ComparisonTooltip from '@/components/ui/chart/ComparisonTooltip.vue'
-import { createApp } from 'vue'
+import { BarChart } from '@/components/ui/chart-bar'
 
 interface ComparisonData {
   district: string
+  displayName?: string
   equipements: number
   espaces: number
   fontaines: number
@@ -22,70 +21,24 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
   title: 'Comparaison par arrondissement',
   description: 'Équipements urbains par quartier',
-  maxItems: 10
+  maxItems: 10,
 })
 
-// Préparer les données pour le graphique empilé
+// Transformer les données pour BarChart
 const chartData = computed(() => {
   return props.data
     .slice(0, props.maxItems)
     .map(item => ({
-      x: item.district,
-      y: item.equipements,
-      y1: item.espaces,
-      y2: item.fontaines
+      district: item.displayName || item.district,
+      equipements: item.equipements,
+      espaces: item.espaces,
+      fontaines: item.fontaines,
     }))
 })
 
-// Configuration des axes et couleurs
-const x = (d: any) => d.x
-const y = [
-  (d: any) => d.y,   // Équipements sportifs
-  (d: any) => d.y1,  // Espaces verts
-  (d: any) => d.y2   // Fontaines
-]
-
-// Couleurs pour chaque catégorie
+// Configuration pour le graphique empilé
+const categories = ['equipements', 'espaces', 'fontaines']
 const colors = ['#5f259f', '#22c55e', '#3b82f6']
-const categories = ['Équipements sportifs', 'Espaces verts', 'Fontaines']
-
-// Configuration du tooltip personnalisé
-const wm = new WeakMap()
-
-function tooltipTemplate(d: any) {
-  if (wm.has(d)) {
-    return wm.get(d)
-  }
-
-  // Trouver les données originales correspondant à cet élément du graphique
-  const originalData = props.data.find(item => item.district === d.x)
-
-  if (!originalData) {
-    return '<div>Données non disponibles</div>'
-  }
-
-  const componentDiv = document.createElement('div')
-  const tooltipData = {
-    district: originalData.district,
-    displayName: originalData.displayName || originalData.district,
-    equipements: originalData.equipements,
-    espaces: originalData.espaces,
-    fontaines: originalData.fontaines,
-    total: originalData.total
-  }
-
-  createApp(ComparisonTooltip, {
-    title: tooltipData.displayName,
-    comparisonData: tooltipData
-  }).mount(componentDiv)
-
-  wm.set(d, componentDiv.innerHTML)
-  return componentDiv.innerHTML
-}
-
-function tooltipColor(d: unknown, i: number) {
-  return colors[i] ?? 'transparent'
-}
 </script>
 
 <template>
@@ -97,47 +50,24 @@ function tooltipColor(d: unknown, i: number) {
       </CardTitle>
       <CardDescription>{{ description }}</CardDescription>
     </CardHeader>
-    <CardContent>
-      <div class="h-80 w-full">
-        <VisXYContainer
-          :data="chartData"
-          :tooltip="{ container: $el?.parentElement, portal: false }"
-          :crosshair="{ container: $el?.parentElement }"
-        >
-          <VisTooltip
-            :horizontal-shift="20"
-            :vertical-shift="20"
-            :style="{ backdropFilter: 'none', filter: 'none', WebkitBackdropFilter: 'none', WebkitFilter: 'none' }"
-          />
-          <VisCrosshair
-            :template="tooltipTemplate"
-            :color="tooltipColor"
-          />
-
-          <VisStackedBar
-            :x="x"
-            :y="y"
-            :color="colors"
-            :duration="800"
-            :bar-padding="0.2"
-            :bar-group-padding="0.1"
+    <CardContent class="p-4">
+      <div class="h-80 w-full overflow-hidden relative">
+        <div class="absolute inset-0">
+          <BarChart
+            :data="chartData"
+            :categories="categories"
+            index="district"
+            :colors="colors"
+            type="stacked"
+            :show-tooltip="true"
+            :show-legend="true"
+            :show-grid-line="true"
+            :show-x-axis="true"
+            :show-y-axis="true"
             :rounded-corners="4"
+            :margin="{ top: 20, bottom: 80, left: 80, right: 40 }"
+            class="!h-full !w-full !max-w-full !max-h-full"
           />
-        </VisXYContainer>
-      </div>
-
-      <!-- Légende -->
-      <div class="flex justify-center gap-6 mt-4">
-        <div
-          v-for="(category, index) in categories"
-          :key="category"
-          class="flex items-center gap-2"
-        >
-          <div
-            class="w-3 h-3 rounded-full"
-            :style="{ backgroundColor: colors[index] }"
-          />
-          <span class="text-sm text-muted-foreground">{{ category }}</span>
         </div>
       </div>
     </CardContent>
