@@ -16,8 +16,8 @@ function navigateToPointFrais() {
 
         <div class="space-y-8">
 
-          <h1 class="font-medium leading-tight font-nexa text-2xl md:text-4xl lg:text-6xl text-foreground">
-            SOS Paris <span class="bg-[#5F259F] text-white px-2 py-1 rounded">surchauffe</span> . Trouvez une zone fraîcheur en quelques clics
+          <h1 class="font-medium max-w-5xl leading-tight font-nexa text-2xl md:text-4xl lg:text-6xl text-foreground">
+            SOS Paris <span class="bg-[#5F259F] text-white px-2 py-1 rounded">surchauffe</span>. Trouvez une zone fraîcheur en quelques clics
           </h1>
 
           <p class="max-w-4xl font-normal leading-relaxed text-muted-foreground text-xl">

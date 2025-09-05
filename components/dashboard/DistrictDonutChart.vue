@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { useChart } from '@/composables/useChart'
 
 interface DistrictItem {
   district: string
@@ -11,88 +12,88 @@ interface Props {
   title: string
   description?: string
   data: DistrictItem[]
-  colors?: string[]
   maxItems?: number
 }
 
 const props = withDefaults(defineProps<Props>(), {
   description: '',
-  colors: () => ['#5f259f', '#3b82f6', '#22c55e', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#10b981', '#f97316', '#84cc16'],
   maxItems: 10,
 })
 
-// État pour le hover et position de la souris
+// Utilisation du composable optimisé
+const { createDonutConfig, isChartReady, CHART_COLORS } = useChart<DistrictItem>({
+  maxItems: props.maxItems,
+  sortBy: 'total',
+  sortOrder: 'desc'
+})
+
+// État pour le hover optimisé
 const hoveredSegment = ref<number | null>(null)
 const mousePosition = ref({ x: 0, y: 0 })
 
-// Transform data for donut
+// Configuration du graphique donut
+const donutConfig = computed(() => createDonutConfig(props.data, 'total', 'displayName'))
+
+// Données transformées pour le rendu SVG
 const donutData = computed(() => {
-  if (!props.data || !Array.isArray(props.data) || props.data.length === 0) {
-    return []
-  }
-
-  const filteredData = props.data
-    .filter(item => item && typeof item === 'object' && item.total > 0)
-    .slice(0, props.maxItems)
-
-  const total = filteredData.reduce((sum, item) => sum + item.total, 0)
-  if (total === 0) return []
-
-  let cumulativePercentage = 0
+  const { data, total, config } = donutConfig.value
   
-  return filteredData.map((item, index) => {
+  if (!data.length) return []
+  
+  let cumulativeAngle = 0
+  
+  return data.map((item, index) => {
     const percentage = (item.total / total) * 100
-    const startAngle = (cumulativePercentage * 3.6) - 90
-    const endAngle = ((cumulativePercentage + percentage) * 3.6) - 90
+    const angle = (item.total / total) * 360
+    const startAngle = cumulativeAngle
+    const endAngle = cumulativeAngle + angle
     
-    cumulativePercentage += percentage
+    cumulativeAngle += angle
+    
+    // Calcul des coordonnées pour l'arc SVG
+    const centerX = 120
+    const centerY = 120
+    const { innerRadius, outerRadius } = config
+    
+    const startAngleRad = (startAngle - 90) * (Math.PI / 180)
+    const endAngleRad = (endAngle - 90) * (Math.PI / 180)
+    
+    const x1 = centerX + outerRadius * Math.cos(startAngleRad)
+    const y1 = centerY + outerRadius * Math.sin(startAngleRad)
+    const x2 = centerX + outerRadius * Math.cos(endAngleRad)
+    const y2 = centerY + outerRadius * Math.sin(endAngleRad)
+    
+    const x3 = centerX + innerRadius * Math.cos(endAngleRad)
+    const y3 = centerY + innerRadius * Math.sin(endAngleRad)
+    const x4 = centerX + innerRadius * Math.cos(startAngleRad)
+    const y4 = centerY + innerRadius * Math.sin(startAngleRad)
+    
+    const largeArcFlag = angle > 180 ? 1 : 0
+    
+    const pathData = [
+      `M ${x1} ${y1}`,
+      `A ${outerRadius} ${outerRadius} 0 ${largeArcFlag} 1 ${x2} ${y2}`,
+      `L ${x3} ${y3}`,
+      `A ${innerRadius} ${innerRadius} 0 ${largeArcFlag} 0 ${x4} ${y4}`,
+      'Z'
+    ].join(' ')
     
     return {
-      district: item.displayName,
-      count: item.total,
+      ...item,
+      index,
+      pathData,
       percentage: Math.round(percentage),
       startAngle,
       endAngle,
-      color: props.colors[index % props.colors.length],
+      color: item.color || CHART_COLORS[index % CHART_COLORS.length]
     }
   })
 })
 
-const hasData = computed(() => donutData.value.length > 0)
-const total = computed(() => donutData.value.reduce((sum, item) => sum + item.count, 0))
-
-// Fonction pour créer le path SVG pour chaque segment
-function createArcPath(startAngle: number, endAngle: number, innerRadius = 60, outerRadius = 90) {
-  const start = polarToCartesian(100, 100, outerRadius, endAngle)
-  const end = polarToCartesian(100, 100, outerRadius, startAngle)
-  const innerStart = polarToCartesian(100, 100, innerRadius, endAngle)
-  const innerEnd = polarToCartesian(100, 100, innerRadius, startAngle)
-  
-  const largeArcFlag = endAngle - startAngle <= 180 ? "0" : "1"
-  
-  return [
-    "M", start.x, start.y, 
-    "A", outerRadius, outerRadius, 0, largeArcFlag, 0, end.x, end.y,
-    "L", innerEnd.x, innerEnd.y,
-    "A", innerRadius, innerRadius, 0, largeArcFlag, 1, innerStart.x, innerStart.y,
-    "Z"
-  ].join(" ")
-}
-
-function polarToCartesian(centerX: number, centerY: number, radius: number, angleInDegrees: number) {
-  const angleInRadians = angleInDegrees * Math.PI / 180.0
-  return {
-    x: centerX + (radius * Math.cos(angleInRadians)),
-    y: centerY + (radius * Math.sin(angleInRadians))
-  }
-}
-
-// Gestion du hover et position de la souris
-function handleMouseEnter(index: number, event?: MouseEvent) {
+// Gestion optimisée des événements de survol
+function handleMouseEnter(index: number, event: MouseEvent) {
   hoveredSegment.value = index
-  if (event) {
-    updateMousePosition(event)
-  }
+  updateMousePosition(event)
 }
 
 function handleMouseMove(event: MouseEvent) {
@@ -104,105 +105,97 @@ function handleMouseLeave() {
 }
 
 function updateMousePosition(event: MouseEvent) {
-  const rect = event.currentTarget?.getBoundingClientRect()
-  if (rect) {
-    mousePosition.value = {
-      x: event.clientX - rect.left,
-      y: event.clientY - rect.top
-    }
+  mousePosition.value = {
+    x: event.clientX,
+    y: event.clientY
   }
 }
+
+// Stats calculées
+const totalItems = computed(() => donutConfig.value.total)
+const displayedItems = computed(() => donutData.value.length)
 </script>
 
 <template>
-  <Card class="w-full">
+  <Card>
     <CardHeader>
-      <CardTitle class="text-base">
-        {{ title }}
-      </CardTitle>
+      <CardTitle>{{ title }}</CardTitle>
       <CardDescription v-if="description">
         {{ description }}
       </CardDescription>
     </CardHeader>
     <CardContent>
-      <div v-if="hasData" class="flex flex-col gap-4">
-        <!-- Donut Chart SVG avec Tooltip -->
-        <div class="relative flex h-48 w-full items-center justify-center">
-          <svg width="200" height="200" viewBox="0 0 200 200">
-            <g>
-              <path
-                v-for="(segment, index) in donutData"
-                :key="segment.district"
-                :d="createArcPath(segment.startAngle, segment.endAngle)"
-                :fill="segment.color"
-                class="cursor-pointer transition-all duration-200"
-                :class="{
-                  'opacity-60': hoveredSegment === index,
-                  'opacity-80': hoveredSegment !== null && hoveredSegment !== index
-                }"
-                :style="{
-                  transformOrigin: '100px 100px',
-                  transform: hoveredSegment === index ? 'scale(1.05)' : 'scale(1)'
-                }"
-                @mouseenter="handleMouseEnter(index, $event)"
-                @mousemove="handleMouseMove($event)"
-                @mouseleave="handleMouseLeave"
-              />
-            </g>
-          </svg>
+      <div v-if="isChartReady && donutData.length > 0" class="relative flex items-center justify-center">
+        <!-- Graphique SVG optimisé -->
+        <svg viewBox="0 0 240 240" class="w-60 h-60">
+          <g>
+            <path
+              v-for="(segment, index) in donutData"
+              :key="`segment-${index}`"
+              :d="segment.pathData"
+              :fill="segment.color"
+              :stroke="hoveredSegment === index ? '#ffffff' : 'transparent'"
+              :stroke-width="hoveredSegment === index ? '2' : '0'"
+              class="transition-all duration-200 cursor-pointer"
+              :class="{
+                'opacity-80': hoveredSegment !== null && hoveredSegment !== index,
+                'scale-105': hoveredSegment === index
+              }"
+              @mouseenter="handleMouseEnter(index, $event)"
+              @mousemove="handleMouseMove"
+              @mouseleave="handleMouseLeave"
+            />
+          </g>
           
           <!-- Texte central -->
-          <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-            <div class="text-2xl font-bold">{{ total }}</div>
-            <div class="text-sm text-muted-foreground">Total</div>
-          </div>
+          <text x="120" y="115" text-anchor="middle" class="text-sm font-medium fill-muted-foreground">
+            Total
+          </text>
+          <text x="120" y="135" text-anchor="middle" class="text-xl font-bold fill-foreground">
+            {{ totalItems.toLocaleString() }}
+          </text>
+        </svg>
 
-          <!-- Tooltip sur hover -->
-          <div 
+        <!-- Tooltip optimisé -->
+        <Teleport to="body">
+          <div
             v-if="hoveredSegment !== null"
-            class="absolute top-2 left-1/2 transform -translate-x-1/2 bg-black/80 text-white px-3 py-2 rounded-md text-sm shadow-lg z-10 pointer-events-none"
-            :style="{ left: `${mousePosition.x}px`, top: `${mousePosition.y}px` }"
+            :style="{
+              position: 'fixed',
+              left: `${mousePosition.x + 10}px`,
+              top: `${mousePosition.y - 10}px`,
+              zIndex: 9999,
+              pointerEvents: 'none'
+            }"
+            class="bg-popover text-popover-foreground p-3 rounded-lg shadow-lg border text-sm"
           >
-            <div class="font-semibold">{{ donutData[hoveredSegment].district }}</div>
-            <div class="text-xs">
-              {{ donutData[hoveredSegment].count }} équipements ({{ donutData[hoveredSegment].percentage }}%)
+            <div class="font-medium">{{ donutData[hoveredSegment].displayName }}</div>
+            <div class="text-muted-foreground">
+              {{ donutData[hoveredSegment].total.toLocaleString() }} éléments ({{ donutData[hoveredSegment].percentage }}%)
             </div>
           </div>
-        </div>
+        </Teleport>
+      </div>
 
-        <!-- Légende horizontale -->
-        <div class="flex flex-wrap gap-x-4 gap-y-2">
+      <!-- Légende optimisée -->
+      <div v-if="donutData.length > 0" class="mt-4 grid grid-cols-2 gap-2 text-sm">
+        <div
+          v-for="(item, index) in donutData.slice(0, 8)"
+          :key="`legend-${index}`"
+          class="flex items-center gap-2"
+        >
           <div
-            v-for="(item, index) in donutData"
-            :key="item.district"
-            class="flex items-center gap-2 text-sm cursor-pointer transition-all duration-200"
-            :class="{
-              'opacity-60': hoveredSegment !== null && hoveredSegment !== index,
-              'font-medium': hoveredSegment === index
-            }"
-            @mouseenter="handleMouseEnter(index)"
-            @mouseleave="handleMouseLeave"
-          >
-            <div
-              class="h-3 w-3 rounded-full transition-all duration-200 flex-shrink-0"
-              :style="{ backgroundColor: item.color }"
-              :class="{
-                'scale-125': hoveredSegment === index
-              }"
-            />
-            <span class="font-medium whitespace-nowrap">{{ item.district }}</span>
-          </div>
+            class="w-3 h-3 rounded-full flex-shrink-0"
+            :style="{ backgroundColor: item.color }"
+          />
+          <span class="truncate">{{ item.displayName }}</span>
+          <span class="text-muted-foreground ml-auto">{{ item.percentage }}%</span>
         </div>
       </div>
-      
-      <!-- État sans données -->
-      <div v-else class="flex h-48 items-center justify-center">
-        <div class="text-center">
-          <Icon name="i-lucide-pie-chart" class="mx-auto mb-2 h-8 w-8 text-muted-foreground" />
-          <p class="text-sm text-muted-foreground">
-            Aucune donnée disponible
-          </p>
-        </div>
+
+      <!-- État vide -->
+      <div v-else class="flex items-center justify-center h-60 text-muted-foreground">
+        Aucune donnée disponible
       </div>
     </CardContent>
   </Card>

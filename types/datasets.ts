@@ -209,3 +209,52 @@ export interface DatasetStoreState {
   sort: SortState
   filterOptions: FilterOptions
 }
+
+// Types pour le store unifié
+export interface UnifiedDataItem {
+  id: string
+  nom: string
+  type: string
+  adresse: string
+  arrondissement: string
+  latitude?: number
+  longitude?: number
+  // Métadonnées pour identifier la source
+  source: 'equipements' | 'espaces-verts' | 'fontaines'
+  sourceType: string // Le type spécifique dans chaque dataset
+  // Champs optionnels selon la source
+  categorie?: string // pour espaces verts
+  etat?: string // pour fontaines
+  payant?: string // pour équipements
+  horaires?: string // pour équipements et espaces verts
+  ouvert_24h?: string
+  superficie?: number
+  canicule_ouverture?: string
+}
+
+export interface UnifiedFilters {
+  search: string
+  sources: Array<'equipements' | 'espaces-verts' | 'fontaines'>
+  types: string[]
+  arrondissements: string[]
+  categories: string[]
+  etats: string[]
+  tarifs: string[]
+  horaires: string[]
+}
+
+export interface UnifiedStoreState {
+  data: UnifiedDataItem[]
+  filteredData: UnifiedDataItem[]
+  filters: UnifiedFilters
+  loading: boolean
+  error: string | null
+  pagination: PaginationState
+  sort: SortState
+  filterOptions: FilterOptions
+  isLoaded: boolean
+  // Sous-données par source
+  equipements: EquipementSportifItem[]
+  espacesVerts: EspaceVertItem[]
+  fontaines: FontaineItem[]
+}

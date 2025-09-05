@@ -21,11 +21,11 @@ defineProps<Props>()
       </div>
 
       <div class="flex-1 flex flex-col space-y-2 overflow-hidden">
-        <h3 class="font-medium font-geist text-xl lg:text-2xl text-card-foreground leading-tight line-clamp-2 flex-shrink-0">
+        <h3 class="font-medium font-nexa text-xl lg:text-2xl text-card-foreground leading-tight line-clamp-2 flex-shrink-0">
           {{ title }}
         </h3>
 
-        <p class="font-normal font-geist text-sm lg:text-base text-muted-foreground leading-relaxed line-clamp-3 flex-1 overflow-hidden">
+        <p class="font-normal font-nexa text-sm lg:text-base text-muted-foreground leading-relaxed line-clamp-3 flex-1 overflow-hidden">
           {{ description }}
         </p>
       </div>

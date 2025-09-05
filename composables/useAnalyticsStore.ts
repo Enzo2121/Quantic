@@ -23,7 +23,7 @@ interface DistrictData {
 
 export function useAnalyticsStore() {
   const { data: equipementsData, error: equipementsError, refresh: refreshEquipements } = useFetch<{ records: EquipementSportifItem[] }>('/api/equipements-sportifs', {
-    query: { page: 1, pageSize: 1000 },
+    query: { page: 1, pageSize: 1500 },
     key: 'analytics-equipements',
     default: () => ({ records: [] }),
     server: true,
@@ -31,7 +31,7 @@ export function useAnalyticsStore() {
   })
 
   const { data: espacesData, error: espacesError, refresh: refreshEspaces } = useFetch<{ records: EspaceVertItem[] }>('/api/espaces-verts', {
-    query: { page: 1, pageSize: 1000 },
+    query: { page: 1, pageSize: 1500 },
     key: 'analytics-espaces',
     default: () => ({ records: [] }),
     server: true,
@@ -39,7 +39,7 @@ export function useAnalyticsStore() {
   })
 
   const { data: fontainesData, error: fontainesError, refresh: refreshFontaines } = useFetch<{ records: FontaineItem[] }>('/api/fontaines', {
-    query: { page: 1, pageSize: 1000 },
+    query: { page: 1, pageSize: 1500 },
     key: 'analytics-fontaines',
     default: () => ({ records: [] }),
     server: true,

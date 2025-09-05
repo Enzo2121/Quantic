@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { BarChart } from '@/components/ui/chart-bar'
-import { nextTick, onMounted } from 'vue'
+import { useChart } from '@/composables/useChart'
 
 interface EquipmentTypeItem {
   type: string
@@ -27,54 +27,50 @@ const props = withDefaults(defineProps<Props>(), {
   showGridLine: true,
 })
 
-onMounted(async () => {
-  await nextTick()
-  forceBarColors()
+// Utilisation du composable optimisé
+const { chartContainer, createBarConfig, isChartReady } = useChart<EquipmentTypeItem>({
+  maxItems: 15,
+  sortBy: 'count',
+  sortOrder: 'desc'
 })
 
-const forceBarColors = () => {
-  const container = document.querySelector('.chart-container')
-  if (container) {
-    const bars = container.querySelectorAll('rect')
-    bars.forEach((bar) => {
-      bar.setAttribute('fill', '#5f259f')
-    })
+// Configuration du graphique avec les nouvelles données
+const chartConfig = computed(() => createBarConfig(props.data, 'count', 'type'))
 
-    const observer = new MutationObserver(() => {
-      const newBars = container.querySelectorAll('rect')
-      newBars.forEach((bar) => {
-        if (bar.getAttribute('fill') !== '#5f259f') {
-          bar.setAttribute('fill', '#5f259f')
-        }
-      })
-    })
-
-    observer.observe(container, { childList: true, subtree: true })
-  }
-}
+// Données formatées pour le graphique
+const chartData = computed(() => 
+  chartConfig.value.data.map(item => ({
+    type: item.type,
+    count: item.count,
+    fill: item.color
+  }))
+)
 </script>
 
 <template>
   <Card>
     <CardHeader>
       <CardTitle>{{ title }}</CardTitle>
-      <CardDescription>{{ description }}</CardDescription>
+      <CardDescription v-if="description">
+        {{ description }}
+      </CardDescription>
     </CardHeader>
     <CardContent>
-      <div :class="height" class="chart-container">
+      <div ref="chartContainer" :class="height">
         <BarChart
-          :data="data"
-          :categories="['count']"
+          v-if="isChartReady && chartData.length > 0"
+          :data="chartData"
           index="type"
-          :colors="['#5f259f']"
+          :categories="['count']"
+          :colors="chartConfig.colors"
           :show-tooltip="showTooltip"
           :show-legend="showLegend"
           :show-grid-line="showGridLine"
-          :show-x-axis="true"
-          :show-y-axis="true"
-          :rounded-corners="2"
-
+          class="h-full w-full"
         />
+        <div v-else-if="!chartData.length" class="flex items-center justify-center h-full text-muted-foreground">
+          Aucune donnée disponible
+        </div>
       </div>
     </CardContent>
   </Card>

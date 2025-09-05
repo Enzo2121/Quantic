@@ -39,7 +39,7 @@ export function useNuxtDataStore<T extends BaseDataItem, F extends BaseFilters>(
   const lazyConfig = {
     initialLoadSize: 20,
     mediumLoadSize: 200,
-    fullLoadSize: 1000,
+    fullLoadSize: 1500, // Augmenté pour les fontaines
     autoLoadOnSearch: true,
     ...config.lazyLoading,
   }
@@ -69,7 +69,7 @@ export function useNuxtDataStore<T extends BaseDataItem, F extends BaseFilters>(
     refresh,
     clear,
   } = useFetch<{ records: T[], nhits: number, parameters: any }>(config.endpoint, {
-    key: config.storeKey,
+    key: config.storeKey, // Clé statique simple
 
     query: computed(() => {
       const query: Record<string, any> = {
@@ -100,9 +100,9 @@ export function useNuxtDataStore<T extends BaseDataItem, F extends BaseFilters>(
       return query
     }),
 
-    server: true,
-    lazy: false,
-    dedupe: 'cancel',
+    server: true, // Revenir à server: true pour éviter les problèmes d'hydratation
+    lazy: false, // Revenir à lazy: false pour un chargement immédiat
+    dedupe: 'cancel', // Optimisation pour éviter les requêtes dupliquées
 
     default: () => ({ records: [], nhits: 0, parameters: {} }),
 

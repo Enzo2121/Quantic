@@ -18,7 +18,7 @@ export const useEquipementsSportifsStore = defineStore('equipements-sportifs', (
     lazyLoading: {
       initialLoadSize: 20,
       mediumLoadSize: 200,
-      fullLoadSize: 1000,
+      fullLoadSize: 1500, // Augmenté pour récupérer tous les équipements
       autoLoadOnSearch: true,
     },
   })

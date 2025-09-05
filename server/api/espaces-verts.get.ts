@@ -2,7 +2,6 @@ import { createUnifiedApiHandler } from '../utils/unified-api-generator'
 import { formatArrondissement, convertDisplayToApiFormat, buildApiParams } from '../utils/api-utils'
 import type { ApiRecord, ApiResponse } from '../utils/api-utils'
 
-// === TYPES SPECIFIQUES ===
 interface EspaceVertRecord extends ApiRecord {
   fields: {
     nom: string
@@ -35,7 +34,6 @@ interface EspaceVertResult {
   canicule_ouverture: string
 }
 
-// === FETCHERS SPECIFIQUES ===
 async function fetchEspacesVertsForType(
   type: string,
   search: string,
@@ -94,7 +92,6 @@ async function fetchEspacesVertsForCategory(
   return await $fetch(`https://parisdata.opendatasoft.com/api/records/1.0/search/?${params}`)
 }
 
-// === CONFIGURATION UNIFIEE ===
 export default createUnifiedApiHandler<EspaceVertRecord, EspaceVertResult>({
   name: 'espaces-verts',
   baseUrl: 'https://parisdata.opendatasoft.com/api/records/1.0/search/',

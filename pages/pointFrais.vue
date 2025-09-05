@@ -24,6 +24,51 @@ const activeTab = ref('equipements')
 const isMapModalOpen = ref(false)
 const selectedMapItem = ref<any>(null)
 
+// Computed pour les options de filtres avec valeurs par défaut sécurisées
+const safeEquipementsFilterOptions = computed(() => ({
+  types: equipementsStore.filterOptions?.types || [],
+  arrondissements: equipementsStore.filterOptions?.arrondissements || [],
+  tarifs: equipementsStore.filterOptions?.tarifs || [],
+  horaires: equipementsStore.filterOptions?.horaires || [],
+}))
+
+const safeEspacesVertsFilterOptions = computed(() => ({
+  types: espacesVertsStore.filterOptions?.types || [],
+  categories: espacesVertsStore.filterOptions?.categories || [],
+  arrondissements: espacesVertsStore.filterOptions?.arrondissements || [],
+  horaires: espacesVertsStore.filterOptions?.horaires || [],
+}))
+
+const safeFontainesFilterOptions = computed(() => ({
+  types: fontainesStore.filterOptions?.types || [],
+  arrondissements: fontainesStore.filterOptions?.arrondissements || [],
+  etats: fontainesStore.filterOptions?.etats || [],
+}))
+
+// Computed pour les filtres avec valeurs par défaut sécurisées
+const safeEquipementsFilters = computed(() => ({
+  search: equipementsStore.filters?.search || '',
+  types: equipementsStore.filters?.types || [],
+  arrondissements: equipementsStore.filters?.arrondissements || [],
+  tarifs: equipementsStore.filters?.tarifs || [],
+  horaires: equipementsStore.filters?.horaires || [],
+}))
+
+const safeEspacesVertsFilters = computed(() => ({
+  search: espacesVertsStore.filters?.search || '',
+  types: espacesVertsStore.filters?.types || [],
+  categories: espacesVertsStore.filters?.categories || [],
+  arrondissements: espacesVertsStore.filters?.arrondissements || [],
+  horaires: espacesVertsStore.filters?.horaires || [],
+}))
+
+const safeFontainesFilters = computed(() => ({
+  search: fontainesStore.filters?.search || '',
+  types: fontainesStore.filters?.types || [],
+  arrondissements: fontainesStore.filters?.arrondissements || [],
+  etats: fontainesStore.filters?.etats || [],
+}))
+
 onMounted(async () => {
   try {
     await initializeStores()
@@ -89,27 +134,27 @@ const currentStoreData = computed(() => {
   switch (activeTab.value) {
     case 'equipements':
       return {
-        data: equipementsStore.filteredData,
+        data: equipementsStore.filteredData || [],
         loading: equipementsStore.loading,
         name: 'équipements sportifs',
-        searchParams: equipementsStore.filters,
-        filterOptions: equipementsStore.filterOptions,
+        searchParams: safeEquipementsFilters.value,
+        filterOptions: safeEquipementsFilterOptions.value,
       }
     case 'espaces-verts':
       return {
-        data: espacesVertsStore.filteredData,
+        data: espacesVertsStore.filteredData || [],
         loading: espacesVertsStore.loading,
         name: 'espaces verts',
-        searchParams: espacesVertsStore.filters,
-        filterOptions: espacesVertsStore.filterOptions,
+        searchParams: safeEspacesVertsFilters.value,
+        filterOptions: safeEspacesVertsFilterOptions.value,
       }
     case 'fontaines':
       return {
-        data: fontainesStore.filteredData,
+        data: fontainesStore.filteredData || [],
         loading: fontainesStore.loading,
         name: 'fontaines à boire',
-        searchParams: fontainesStore.filters,
-        filterOptions: fontainesStore.filterOptions,
+        searchParams: safeFontainesFilters.value,
+        filterOptions: safeFontainesFilterOptions.value,
       }
     default:
       return {
@@ -228,7 +273,26 @@ function handleFontainesReset() {
 
 <template>
   <div class="w-full flex flex-col gap-6">
-    <div class="flex flex-wrap items-center justify-between gap-4" />
+    <div class="flex flex-wrap items-center justify-between gap-4">
+      <div>
+        <h1 class="font-nexa text-3xl font-bold tracking-tight text-violet">
+          Points Frais
+        </h1>
+        <p class="mt-2 text-muted-foreground">
+          Explorez les équipements urbains et points de fraîcheur de Paris
+        </p>
+      </div>
+      <div class="flex items-center gap-2">
+        <Button variant="outline" @click="navigateTo('/search')">
+          <Icon name="i-lucide-search" class="mr-2 h-4 w-4" />
+          Recherche unifiée
+        </Button>
+        <Button variant="outline" @click="navigateTo('/analytics')">
+          <Icon name="i-lucide-bar-chart-3" class="mr-2 h-4 w-4" />
+          Analyse des données
+        </Button>
+      </div>
+    </div>
     <Tabs v-model="activeTab" class="w-full">
       <TabsList class="grid grid-cols-3 h-16 w-full p-1">
         <TabsTrigger
@@ -239,7 +303,7 @@ function handleFontainesReset() {
           <span class="hidden truncate sm:inline">Équipements sportifs</span>
           <span class="truncate sm:hidden">Équipements</span>
           <Badge variant="secondary" class="ml-1 flex-shrink-0 text-xs">
-            {{ stats.equipements.total }}
+            {{ stats.equipements.total || 0 }}
           </Badge>
         </TabsTrigger>
         <TabsTrigger
@@ -250,7 +314,7 @@ function handleFontainesReset() {
           <span class="hidden truncate sm:inline">Espaces verts</span>
           <span class="truncate sm:hidden">Espaces</span>
           <Badge variant="secondary" class="ml-1 flex-shrink-0 text-xs">
-            {{ stats.espacesVerts.total }}
+            {{ stats.espacesVerts.total || 0 }}
           </Badge>
         </TabsTrigger>
         <TabsTrigger
@@ -261,7 +325,7 @@ function handleFontainesReset() {
           <span class="hidden truncate sm:inline">Fontaines à boire</span>
           <span class="truncate sm:hidden">Fontaines</span>
           <Badge variant="secondary" class="ml-1 flex-shrink-0 text-xs">
-            {{ stats.fontaines.total }}
+            {{ stats.fontaines.total || 0 }}
           </Badge>
         </TabsTrigger>
       </TabsList>
@@ -271,15 +335,15 @@ function handleFontainesReset() {
           <CardContent class="space-y-6 mt-2">
             <div class="dashboard-filters">
               <DataFilters
-                :search="(() => equipementsStore.filters.search)()"
-                :selected-types="(() => equipementsStore.filters.types)()"
-                :selected-arrondissements="(() => equipementsStore.filters.arrondissements)()"
-                :selected-tarifs="(() => equipementsStore.filters.tarifs)()"
-                :selected-horaires="(() => equipementsStore.filters.horaires)()"
-                :type-options="equipementsStore.filterOptions.types"
-                :arrondissement-options="equipementsStore.filterOptions.arrondissements"
-                :tarif-options="equipementsStore.filterOptions.tarifs"
-                :horaire-options="equipementsStore.filterOptions.horaires"
+                :search="safeEquipementsFilters.search"
+                :selected-types="safeEquipementsFilters.types"
+                :selected-arrondissements="safeEquipementsFilters.arrondissements"
+                :selected-tarifs="safeEquipementsFilters.tarifs"
+                :selected-horaires="safeEquipementsFilters.horaires"
+                :type-options="safeEquipementsFilterOptions.types"
+                :arrondissement-options="safeEquipementsFilterOptions.arrondissements"
+                :tarif-options="safeEquipementsFilterOptions.tarifs"
+                :horaire-options="safeEquipementsFilterOptions.horaires"
                 :show-tarif-filter="true"
                 :show-horaire-filter="true"
                 :is-loading-options="equipementsStore.isLoadingOptions"
@@ -295,11 +359,11 @@ function handleFontainesReset() {
             <LoadingState
               :loading="equipementsStore.loading"
               type="table"
-              :rows="equipementsStore.pagination.pageSize"
+              :rows="equipementsStore.pagination?.pageSize || 20"
               :columns="equipementsColumns.length"
             >
               <DataTable
-                :data="equipementsStore.currentPageData"
+                :data="equipementsStore.currentPageData || []"
                 :loading="equipementsStore.loading"
                 :pagination="equipementsStore.pagination"
                 :sort-by="equipementsStore.sortBy"
@@ -312,10 +376,10 @@ function handleFontainesReset() {
                 @open-map-modal="handleOpenMapModal"
               />
             </LoadingState>
-
           </CardContent>
         </Card>
       </TabsContent>
+
       <TabsContent value="espaces-verts" class="space-y-6">
         <Card>
           <CardHeader>
@@ -330,15 +394,15 @@ function handleFontainesReset() {
           <CardContent class="space-y-6">
             <div class="dashboard-filters">
               <DataFilters
-                :search="espacesVertsStore.filters.search"
-                :selected-types="espacesVertsStore.filters.types"
-                :selected-categories="espacesVertsStore.filters.categories"
-                :selected-arrondissements="espacesVertsStore.filters.arrondissements"
-                :selected-horaires="espacesVertsStore.filters.horaires"
-                :type-options="espacesVertsStore.filterOptions.types"
-                :categorie-options="espacesVertsStore.filterOptions.categories"
-                :arrondissement-options="espacesVertsStore.filterOptions.arrondissements"
-                :horaire-options="espacesVertsStore.filterOptions.horaires"
+                :search="safeEspacesVertsFilters.search"
+                :selected-types="safeEspacesVertsFilters.types"
+                :selected-categories="safeEspacesVertsFilters.categories"
+                :selected-arrondissements="safeEspacesVertsFilters.arrondissements"
+                :selected-horaires="safeEspacesVertsFilters.horaires"
+                :type-options="safeEspacesVertsFilterOptions.types"
+                :categorie-options="safeEspacesVertsFilterOptions.categories"
+                :arrondissement-options="safeEspacesVertsFilterOptions.arrondissements"
+                :horaire-options="safeEspacesVertsFilterOptions.horaires"
                 :show-categorie-filter="true"
                 :show-horaire-filter="true"
                 :is-loading-options="espacesVertsStore.isLoadingOptions"
@@ -354,11 +418,11 @@ function handleFontainesReset() {
             <LoadingState
               :loading="espacesVertsStore.loading"
               type="table"
-              :rows="espacesVertsStore.pagination.pageSize"
+              :rows="espacesVertsStore.pagination?.pageSize || 20"
               :columns="espacesVertsColumns.length"
             >
               <DataTable
-                :data="espacesVertsStore.currentPageData"
+                :data="espacesVertsStore.currentPageData || []"
                 :loading="espacesVertsStore.loading"
                 :pagination="espacesVertsStore.pagination"
                 :sort-by="espacesVertsStore.sortBy"
@@ -371,7 +435,6 @@ function handleFontainesReset() {
                 @open-map-modal="handleOpenMapModal"
               />
             </LoadingState>
-
           </CardContent>
         </Card>
       </TabsContent>
@@ -390,13 +453,13 @@ function handleFontainesReset() {
           <CardContent class="space-y-6">
             <div class="dashboard-filters">
               <DataFilters
-                :search="fontainesStore.filters.search"
-                :selected-types="fontainesStore.filters.types"
-                :selected-arrondissements="fontainesStore.filters.arrondissements"
-                :selected-etats="fontainesStore.filters.etats"
-                :type-options="fontainesStore.filterOptions.types"
-                :arrondissement-options="fontainesStore.filterOptions.arrondissements"
-                :etat-options="fontainesStore.filterOptions.etats"
+                :search="safeFontainesFilters.search"
+                :selected-types="safeFontainesFilters.types"
+                :selected-arrondissements="safeFontainesFilters.arrondissements"
+                :selected-etats="safeFontainesFilters.etats"
+                :type-options="safeFontainesFilterOptions.types"
+                :arrondissement-options="safeFontainesFilterOptions.arrondissements"
+                :etat-options="safeFontainesFilterOptions.etats"
                 :show-etat-filter="true"
                 :is-loading-options="fontainesStore.isLoadingOptions"
                 @update:search="handleFontainesSearch"
@@ -410,11 +473,11 @@ function handleFontainesReset() {
             <LoadingState
               :loading="fontainesStore.loading"
               type="table"
-              :rows="fontainesStore.pagination.pageSize"
+              :rows="fontainesStore.pagination?.pageSize || 20"
               :columns="fontainesColumns.length"
             >
               <DataTable
-                :data="fontainesStore.currentPageData"
+                :data="fontainesStore.currentPageData || []"
                 :loading="fontainesStore.loading"
                 :pagination="fontainesStore.pagination"
                 :sort-by="fontainesStore.sortBy"
@@ -427,7 +490,6 @@ function handleFontainesReset() {
                 @open-map-modal="handleOpenMapModal"
               />
             </LoadingState>
-
           </CardContent>
         </Card>
       </TabsContent>

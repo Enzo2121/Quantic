@@ -2,7 +2,6 @@ import { createUnifiedApiHandler } from '../utils/unified-api-generator'
 import { formatArrondissement, convertDisplayToApiFormat, buildApiParams } from '../utils/api-utils'
 import type { ApiRecord, ApiResponse } from '../utils/api-utils'
 
-// === TYPES SPECIFIQUES ===
 interface EquipementRecord extends ApiRecord {
   fields: {
     nom: string
@@ -27,7 +26,6 @@ interface EquipementResult {
   horaires: string
 }
 
-// === FETCHER SPECIFIQUE ===
 async function fetchEquipementsForType(
   type: string,
   search: string,
@@ -56,7 +54,6 @@ async function fetchEquipementsForType(
   return await $fetch(`https://opendata.paris.fr/api/records/1.0/search/?${params}`)
 }
 
-// === CONFIGURATION UNIFIEE ===
 export default createUnifiedApiHandler<EquipementRecord, EquipementResult>({
   name: 'equipements-sportifs',
   baseUrl: 'https://opendata.paris.fr/api/records/1.0/search/',
