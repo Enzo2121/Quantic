@@ -1,7 +1,6 @@
 import type { UnifiedDataItem, UnifiedFilters, SelectOption } from '~/types/datasets'
 
 export const useUnifiedDataStore = defineStore('unified-data', () => {
-  // État du store unifié avec des refs individuels
   const data = ref<UnifiedDataItem[]>([])
   const filteredData = ref<UnifiedDataItem[]>([])
   const filters = ref<UnifiedFilters>({
@@ -18,7 +17,7 @@ export const useUnifiedDataStore = defineStore('unified-data', () => {
   const error = ref<string | null>(null)
   const pagination = ref({
     page: 1,
-    pageSize: 100, // Augmenter la taille de page pour la recherche unifiée
+    pageSize: 100, 
     total: 0,
   })
   const sort = ref({
@@ -61,7 +60,6 @@ export const useUnifiedDataStore = defineStore('unified-data', () => {
       })
     }
 
-    // Transformer espaces verts
     if (filters.value.sources.includes('espaces-verts')) {
       espacesVerts.value.forEach(item => {
         unifiedData.push({
@@ -83,7 +81,6 @@ export const useUnifiedDataStore = defineStore('unified-data', () => {
       })
     }
 
-    // Transformer fontaines
     if (filters.value.sources.includes('fontaines')) {
       fontaines.value.forEach(item => {
         unifiedData.push({
@@ -104,11 +101,9 @@ export const useUnifiedDataStore = defineStore('unified-data', () => {
     return unifiedData
   }
 
-  // Fonction de filtrage unifié
   function applyFilters(dataToFilter: UnifiedDataItem[]): UnifiedDataItem[] {
     let filtered = [...dataToFilter]
 
-    // Filtre par recherche textuelle
     if (filters.value.search.trim()) {
       const searchTerm = filters.value.search.toLowerCase()
       filtered = filtered.filter(item =>
@@ -305,13 +300,13 @@ export const useUnifiedDataStore = defineStore('unified-data', () => {
   }
 
   // Computed pour les données paginées
-  const currentPageData = computed(() => {
+  const paginatedData = computed(() => {
     const start = (pagination.value.page - 1) * pagination.value.pageSize
     const end = start + pagination.value.pageSize
     return filteredData.value.slice(start, end)
   })
 
-  const totalPages = computed(() => 
+  const computedTotalPages = computed(() => 
     Math.ceil(pagination.value.total / pagination.value.pageSize)
   )
 
@@ -321,7 +316,7 @@ export const useUnifiedDataStore = defineStore('unified-data', () => {
   }, { immediate: true })
 
   return {
-    // État - Supprimer readonly() pour éviter les conflits de proxy
+    // État - Reactive refs
     data,
     filteredData,
     filters,
@@ -335,9 +330,9 @@ export const useUnifiedDataStore = defineStore('unified-data', () => {
     espacesVerts,
     fontaines,
     
-    // Computed
-    currentPageData,
-    totalPages,
+    // Computed - with different names to avoid conflicts
+    currentPageData: paginatedData,
+    totalPages: computedTotalPages,
     
     // Actions
     loadAllData,

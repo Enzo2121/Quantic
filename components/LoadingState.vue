@@ -1,6 +1,6 @@
 <script setup lang="ts">
 interface Props {
-  loading: boolean
+  loading?: boolean
   type?: 'spinner' | 'skeleton' | 'table'
   rows?: number
   columns?: number

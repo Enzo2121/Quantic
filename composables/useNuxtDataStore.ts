@@ -211,7 +211,7 @@ export function useNuxtDataStore<T extends BaseDataItem, F extends BaseFilters>(
   const totalItems = computed(() => data.value.length)
   const totalPages = computed(() => Math.ceil(totalItems.value / pagination.value.pageSize))
 
-  const loading = computed(() => status.value === 'pending')
+  const isLoading = computed(() => status.value === 'pending')
   const isLoaded = computed(() => status.value === 'success' && data.value.length > 0)
 
   const filterOptions = computed(() => {
@@ -497,10 +497,10 @@ export function useNuxtDataStore<T extends BaseDataItem, F extends BaseFilters>(
     return null
   })
 
-  const stateData = reactive({
-    data: computed(() => data.value),
+  return {
+    // Direct state properties - no wrapper to avoid proxy conflicts
     filters,
-    loading: computed(() => loading.value),
+    loading: computed(() => isLoading.value),
     error: computed(() => error.value?.message || null),
     pagination: computed(() => ({
       ...pagination.value,
@@ -509,22 +509,15 @@ export function useNuxtDataStore<T extends BaseDataItem, F extends BaseFilters>(
     sortBy,
     sortOrder,
     isLoaded: computed(() => isLoaded.value),
-  })
-
-  // Computed séparé pour éviter les problèmes de proxy Pinia
-  const filteredData = computed(() => data.value)
-
-  return {
-    ...toRefs(stateData),
-    filteredData,
-
-    data,
+    
+    // Data properties
+    data: computed(() => data.value),
+    filteredData: computed(() => data.value),
     currentPageData,
     totalPages,
     filterOptions,
 
     status,
-    error,
 
     loadingMode: readonly(loadingMode),
     isLoadingMore: readonly(isLoadingMore),
@@ -549,6 +542,5 @@ export function useNuxtDataStore<T extends BaseDataItem, F extends BaseFilters>(
 
     fetchAll: refresh,
     fetchPage: (page: number) => updatePagination(page),
-    applyFilters: () => {},
   }
 }

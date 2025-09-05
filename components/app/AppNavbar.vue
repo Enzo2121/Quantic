@@ -41,7 +41,7 @@ watch(() => route.path, () => {
 <template>
   <header class="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
     <div class="px-4 lg:px-6">
-      <div class="max-w-[1430px] mx-auto flex h-16 items-center">
+      <div class="max-w-7xl mx-auto flex h-16 items-center">
         <div class="flex items-center gap-2 flex-shrink-0">
           <h1 class="font-nexa text-xl font-bold text-[#5F259F]">
             Quantic Factory
@@ -117,7 +117,6 @@ watch(() => route.path, () => {
               {{ item.name }}
             </NuxtLink>
 
-            <!-- Bouton Dark/Light Mode pour mobile -->
             <div class="flex items-center justify-between px-3 py-2">
               <span class="text-sm font-medium text-muted-foreground">Thème</span>
               <DarkToggle />
