@@ -141,7 +141,7 @@ function clearAll() {
     <div class="space-y-2">
       <Label for="search">Rechercher</Label>
       <div class="relative">
-        <Icon name="i-lucide-search" class="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <Icon name="i-lucide-search" class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
           id="search"
           v-model="searchInput"
@@ -152,7 +152,7 @@ function clearAll() {
           v-if="searchInput"
           variant="ghost"
           size="sm"
-          class="absolute right-1 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0"
+          class="absolute right-1 top-1/2 h-6 w-6 -translate-y-1/2 p-0"
           @click="searchInput = ''"
         >
           <Icon name="i-lucide-x" class="h-3 w-3" />
@@ -160,9 +160,14 @@ function clearAll() {
       </div>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+    <div class="grid grid-cols-1 gap-4 md:grid-cols-4">
       <div class="space-y-2">
-        <Label>Type</Label>
+        <Label class="flex items-center gap-2">
+          Type
+          <Badge v-if="selectedTypes.length > 1" variant="secondary" class="text-xs">
+            {{ selectedTypes.length }} sélectionnés
+          </Badge>
+        </Label>
 
         <Popover v-model:open="isTypeOpen">
           <PopoverTrigger as-child>
@@ -172,8 +177,9 @@ function clearAll() {
               :aria-expanded="isTypeOpen"
               :disabled="isLoadingOptions"
               class="w-full justify-between"
+              :class="{ 'border-[#5f259f] bg-[#5f259f]/10': selectedTypes.length > 1 }"
             >
-              <span v-if="isLoadingOptions" class="text-muted-foreground flex items-center">
+              <span v-if="isLoadingOptions" class="flex items-center text-muted-foreground">
                 <Icon name="i-lucide-loader-2" class="mr-2 h-4 w-4 animate-spin" />
                 Chargement des options...
               </span>
@@ -183,7 +189,7 @@ function clearAll() {
               <span v-else-if="selectedTypes.length === 1">
                 {{ selectedTypes[0] }}
               </span>
-              <span v-else>
+              <span v-else class="text-[#5f259f] font-medium">
                 {{ selectedTypes.length }} sélectionné(s)
               </span>
               <Icon v-if="!isLoadingOptions" name="i-lucide-chevrons-up-down" class="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -205,6 +211,7 @@ function clearAll() {
                     :class="{ 'opacity-0': !selectedTypes.includes(option.value) }"
                   />
                   <span>{{ option.label }}</span>
+                  <span v-if="option.count" class="ml-auto text-xs text-muted-foreground">({{ option.count }})</span>
                 </CommandItem>
               </CommandGroup>
             </Command>
@@ -229,7 +236,12 @@ function clearAll() {
       </div>
 
       <div v-if="showCategorieFilter" class="space-y-2">
-        <Label>Catégorie</Label>
+        <Label class="flex items-center gap-2">
+          Catégorie
+          <Badge v-if="selectedCategories.length > 1" variant="secondary" class="text-xs">
+            {{ selectedCategories.length }} sélectionnées
+          </Badge>
+        </Label>
 
         <Popover v-model:open="isCategorieOpen">
           <PopoverTrigger as-child>
@@ -239,8 +251,9 @@ function clearAll() {
               :aria-expanded="isCategorieOpen"
               :disabled="isLoadingOptions"
               class="w-full justify-between"
+              :class="{ 'border-[#5f259f] bg-[#5f259f]/10': selectedCategories.length > 1 }"
             >
-              <span v-if="isLoadingOptions" class="text-muted-foreground flex items-center">
+              <span v-if="isLoadingOptions" class="flex items-center text-muted-foreground">
                 <Icon name="i-lucide-loader-2" class="mr-2 h-4 w-4 animate-spin" />
                 Chargement des options...
               </span>
@@ -250,7 +263,7 @@ function clearAll() {
               <span v-else-if="selectedCategories.length === 1">
                 {{ selectedCategories[0] }}
               </span>
-              <span v-else>
+              <span v-else class="text-[#5f259f] font-medium">
                 {{ selectedCategories.length }} sélectionné(s)
               </span>
               <Icon v-if="!isLoadingOptions" name="i-lucide-chevrons-up-down" class="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -272,6 +285,7 @@ function clearAll() {
                     :class="{ 'opacity-0': !selectedCategories.includes(option.value) }"
                   />
                   <span>{{ option.label }}</span>
+                  <span v-if="option.count" class="ml-auto text-xs text-muted-foreground">({{ option.count }})</span>
                 </CommandItem>
               </CommandGroup>
             </Command>
@@ -307,7 +321,7 @@ function clearAll() {
               :disabled="isLoadingOptions"
               class="w-full justify-between"
             >
-              <span v-if="isLoadingOptions" class="text-muted-foreground flex items-center">
+              <span v-if="isLoadingOptions" class="flex items-center text-muted-foreground">
                 <Icon name="i-lucide-loader-2" class="mr-2 h-4 w-4 animate-spin" />
                 Chargement des options...
               </span>
@@ -339,6 +353,7 @@ function clearAll() {
                     :class="{ 'opacity-0': !selectedArrondissements.includes(option.value) }"
                   />
                   <span>{{ option.label }}</span>
+                  <span v-if="option.count" class="ml-auto text-xs text-muted-foreground">({{ option.count }})</span>
                 </CommandItem>
               </CommandGroup>
             </Command>
@@ -363,7 +378,12 @@ function clearAll() {
       </div>
 
       <div class="space-y-2">
-        <Label v-if="showEtatFilter">État</Label>
+        <Label v-if="showEtatFilter" class="flex items-center gap-2">
+          État
+          <Badge v-if="selectedEtats.length > 1" variant="secondary" class="text-xs">
+            {{ selectedEtats.length }} sélectionnés
+          </Badge>
+        </Label>
         <Label v-else>&nbsp;</Label>
 
         <div v-if="showEtatFilter" class="space-y-2">
@@ -375,8 +395,9 @@ function clearAll() {
                 :aria-expanded="isEtatOpen"
                 :disabled="isLoadingOptions"
                 class="w-full justify-between"
+                :class="{ 'border-[#5f259f] bg-[#5f259f]/10': selectedEtats.length > 1 }"
               >
-                <span v-if="isLoadingOptions" class="text-muted-foreground flex items-center">
+                <span v-if="isLoadingOptions" class="flex items-center text-muted-foreground">
                   <Icon name="i-lucide-loader-2" class="mr-2 h-4 w-4 animate-spin" />
                   Chargement des options...
                 </span>
@@ -386,7 +407,7 @@ function clearAll() {
                 <span v-else-if="selectedEtats.length === 1">
                   {{ selectedEtats[0] }}
                 </span>
-                <span v-else>
+                <span v-else class="text-[#5f259f] font-medium">
                   {{ selectedEtats.length }} sélectionné(s)
                 </span>
                 <Icon v-if="!isLoadingOptions" name="i-lucide-chevrons-up-down" class="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -408,6 +429,7 @@ function clearAll() {
                       :class="{ 'opacity-0': !selectedEtats.includes(option.value) }"
                     />
                     <span>{{ option.label }}</span>
+                    <span v-if="option.count" class="ml-auto text-xs text-muted-foreground">({{ option.count }})</span>
                   </CommandItem>
                 </CommandGroup>
               </Command>
@@ -432,7 +454,7 @@ function clearAll() {
         </div>
 
         <div class="flex flex-col items-start gap-2" :class="{ 'mt-6': !showEtatFilter }">
-          <Button variant="outline" @click="clearAll" class="w-full px-0">
+          <Button class="w-full px-0" variant="outline" @click="clearAll">
             <Icon name="i-lucide-trash-2" class="mr-2 h-4 w-4" />
             Supprimer les filtres
           </Button>

@@ -1,116 +1,84 @@
-function formatArrondissement(arrondissement: string | undefined): string {
-  if (!arrondissement) return 'Arrondissement non défini'
+import { createUnifiedApiHandler } from '../utils/unified-api-generator'
+import { formatArrondissement, convertDisplayToApiFormat, buildApiParams } from '../utils/api-utils'
+import type { ApiRecord, ApiResponse } from '../utils/api-utils'
 
-  if (arrondissement.match(/^750\d{2}$/)) {
-    const num = parseInt(arrondissement.substring(3))
-    return formatDistrictNumber(num)
+// === TYPES SPECIFIQUES ===
+interface EquipementRecord extends ApiRecord {
+  fields: {
+    nom: string
+    type: string
+    adresse: string
+    arrondissement: string
+    payant: string
+    horaires_periode: string
+    geo_point_2d?: [number, number]
   }
-
-  const numMatch = arrondissement.match(/(\d+)/)
-  if (numMatch) {
-    const num = parseInt(numMatch[1])
-    if (num >= 1 && num <= 20) {
-      return formatDistrictNumber(num)
-    }
-  }
-
-  return 'Arrondissement non défini'
 }
 
-function formatDistrictNumber(num: number): string {
-  if (num === 1) {
-    return '1er'
-  } else if (num >= 2 && num <= 20) {
-    return `${num}ème`
-  }
-  return `${num}ème`
+interface EquipementResult {
+  id: string
+  nom: string
+  type: string
+  adresse: string
+  arrondissement: string
+  latitude?: number
+  longitude?: number
+  payant: string
+  horaires: string
 }
 
-function convertDisplayToApiFormat(arrondissement: string): string {
-  if (arrondissement.match(/^750\d{2}$/)) {
-    return arrondissement
-  }
-
-  const numMatch = arrondissement.match(/^(\d+)(?:er|ème)$/)
-  if (numMatch) {
-    const num = parseInt(numMatch[1])
-    if (num >= 1 && num <= 20) {
-      return `750${num.toString().padStart(2, '0')}`
+// === FETCHER SPECIFIQUE ===
+async function fetchEquipementsForType(
+  type: string,
+  search: string,
+  otherFilters: Record<string, string[]>,
+  pageSize: number
+): Promise<ApiResponse<EquipementRecord>> {
+  const params = buildApiParams(
+    {
+      name: 'equipements-sportifs',
+      endpoint: 'ilots-de-fraicheur-equipements-activites',
+      facets: ['type', 'payant', 'arrondissement', 'horaires_periode']
+    },
+    {
+      search,
+      pageSize,
+      start: 0,
+      refines: {
+        type: [type],
+        arrondissement: otherFilters.arrondissements?.map(arr => 
+          convertDisplayToApiFormat(arr, 'paris')
+        ) || []
+      }
     }
-  }
+  )
 
-  return arrondissement
+  return await $fetch(`https://opendata.paris.fr/api/records/1.0/search/?${params}`)
 }
 
-export default defineCachedEventHandler(async (event) => {
-  const query = getQuery(event)
-
-  const page = Number.parseInt(query.page as string) || 1
-  const pageSize = Number.parseInt(query.pageSize as string) || 20
-  const search = query.search as string || ''
-  const types = typeof query.types === 'string' ? [query.types] : (query.types as string[]) || []
-  const arrondissements = typeof query.arrondissements === 'string' ? [query.arrondissements] : (query.arrondissements as string[]) || []
-
-
-  try {
-    const params = new URLSearchParams({
-      dataset: 'ilots-de-fraicheur-equipements-activites',
-      rows: String(pageSize),
-      start: String((page - 1) * pageSize),
-      facet: ['type', 'payant', 'arrondissement', 'horaires_periode'].join(','),
-    })
-
-    if (search) {
-      params.append('q', search)
-    }
-
-    if (types.length > 0) {
-      types.forEach((type) => {
-        params.append('refine.type', type)
-      })
-    }
-
-    if (arrondissements.length > 0) {
-      arrondissements.forEach((arr) => {
-        const apiFormat = convertDisplayToApiFormat(arr)
-        params.append('refine.arrondissement', apiFormat)
-      })
-    }
-
-    const response = await $fetch<{ records: any[], nhits: number, parameters: any }>(`https://opendata.paris.fr/api/records/1.0/search/?${params}`)
-
-    const transformedData = {
-      records: response.records.map((record: any) => ({
-        id: record.recordid,
-        nom: record.fields.nom || 'Nom non disponible',
-        type: record.fields.type || 'Type non défini',
-        adresse: record.fields.adresse || 'Adresse non disponible',
-        arrondissement: formatArrondissement(record.fields.arrondissement),
-        latitude: record.geometry?.coordinates?.[1] || record.fields?.geo_point_2d?.[0],
-        longitude: record.geometry?.coordinates?.[0] || record.fields?.geo_point_2d?.[1],
-        payant: record.fields.payant || 'Non spécifié',
-        horaires: record.fields.horaires_periode,
-      })),
-      nhits: response.nhits,
-      parameters: response.parameters,
-    }
-
-    return transformedData
-  }
-  catch (error) {
-    console.error('API Route - Erreur équipements:', error)
-    throw createError({
-      statusCode: 500,
-      statusMessage: 'Erreur lors du chargement des équipements sportifs',
-    })
-  }
-}, {
-  maxAge: 1000 * 60 * 5, 
+// === CONFIGURATION UNIFIEE ===
+export default createUnifiedApiHandler<EquipementRecord, EquipementResult>({
   name: 'equipements-sportifs',
-  getKey: (event) => {
-    const query = getQuery(event)
-    const types = typeof query.types === 'string' ? [query.types] : (query.types as string[]) || []
-    const arrondissements = typeof query.arrondissements === 'string' ? [query.arrondissements] : (query.arrondissements as string[]) || []
-    return `equipements-${query.page || 1}-${query.pageSize || 20}-${query.search || ''}-${types.join(',')}-${arrondissements.join(',')}`
+  baseUrl: 'https://opendata.paris.fr/api/records/1.0/search/',
+  dataset: {
+    name: 'equipements-sportifs',
+    endpoint: 'ilots-de-fraicheur-equipements-activites',
+    facets: ['type', 'payant', 'arrondissement', 'horaires_periode']
   },
+  transformer: {
+    transform: (record: EquipementRecord): EquipementResult => ({
+      id: record.recordid,
+      nom: record.fields.nom || 'Nom non disponible',
+      type: record.fields.type || 'Type non défini',
+      adresse: record.fields.adresse || 'Adresse non disponible',
+      arrondissement: formatArrondissement(record.fields.arrondissement, 'paris'),
+      latitude: record.geometry?.coordinates?.[1] || record.fields?.geo_point_2d?.[0],
+      longitude: record.geometry?.coordinates?.[0] || record.fields?.geo_point_2d?.[1],
+      payant: record.fields.payant || 'Non spécifié',
+      horaires: record.fields.horaires_periode,
+    })
+  },
+  fetcher: {
+    fetchForType: fetchEquipementsForType
+  }
 })
