@@ -1,4 +1,3 @@
-// Utilitaires partagés pour les APIs Open Data Paris
 export interface ApiRecord {
   recordid: string
   fields: Record<string, any>
@@ -20,7 +19,6 @@ export interface DatasetConfig {
   searchFields?: string[]
 }
 
-// === FORMATAGE ARRONDISSEMENTS ===
 export function formatArrondissement(input: string | undefined, sourceType: 'paris' | 'fontaine' = 'paris'): string {
   if (!input) {
     return 'Arrondissement non défini'
@@ -82,7 +80,6 @@ export function convertDisplayToApiFormat(arrondissement: string, targetFormat: 
   return arrondissement
 }
 
-// === GESTION DES DOUBLONS ===
 export function removeDuplicates<T extends { recordid: string }>(records: T[]): T[] {
   const seen = new Set<string>()
   return records.filter((record) => {
@@ -94,7 +91,6 @@ export function removeDuplicates<T extends { recordid: string }>(records: T[]): 
   })
 }
 
-// === PAGINATION ===
 export function paginateResults<T>(records: T[], page: number, pageSize: number): { paginatedRecords: T[], totalItems: number } {
   const startIndex = (page - 1) * pageSize
   const endIndex = startIndex + pageSize
@@ -105,7 +101,6 @@ export function paginateResults<T>(records: T[], page: number, pageSize: number)
   }
 }
 
-// === PARSING DES PARAMETRES DE REQUETE ===
 export function parseQueryParams(query: Record<string, any>) {
   return {
     page: Number.parseInt(query.page as string) || 1,
@@ -115,12 +110,14 @@ export function parseQueryParams(query: Record<string, any>) {
     categories: typeof query.categories === 'string' ? [query.categories] : (query.categories as string[]) || [],
     arrondissements: typeof query.arrondissements === 'string' ? [query.arrondissements] : (query.arrondissements as string[]) || [],
     etats: typeof query.etats === 'string' ? [query.etats] : (query.etats as string[]) || [],
+    tarifs: typeof query.tarifs === 'string' ? [query.tarifs] : (query.tarifs as string[]) || [],
+    horaires: typeof query.horaires === 'string' ? [query.horaires] : (query.horaires as string[]) || [],
+    accessibilite: typeof query.accessibilite === 'string' ? [query.accessibilite] : (query.accessibilite as string[]) || [],
   }
 }
 
-// === CONSTRUCTION DE CLE DE CACHE ===
 export function buildCacheKey(baseName: string, params: ReturnType<typeof parseQueryParams>, version = 'v2'): string {
-  const { page, pageSize, search, types, categories, arrondissements, etats } = params
+  const { page, pageSize, search, types, categories, arrondissements, etats, tarifs, horaires, accessibilite } = params
 
   const segments = [
     `${baseName}-${version}`,
@@ -131,12 +128,14 @@ export function buildCacheKey(baseName: string, params: ReturnType<typeof parseQ
     categories.length > 0 ? `cat-${categories.sort().join('|')}` : 'no-cat',
     arrondissements.length > 0 ? `arr-${arrondissements.sort().join('|')}` : 'no-arr',
     etats.length > 0 ? `etats-${etats.sort().join('|')}` : 'no-etats',
+    tarifs.length > 0 ? `tarifs-${tarifs.sort().join('|')}` : 'no-tarifs',
+    horaires.length > 0 ? `horaires-${horaires.sort().join('|')}` : 'no-horaires',
+    accessibilite.length > 0 ? `access-${accessibilite.sort().join('|')}` : 'no-access',
   ]
 
   return segments.join('-')
 }
 
-// === CONSTRUCTION PARAMETRES API ===
 export function buildApiParams(config: DatasetConfig, params: {
   search?: string
   pageSize: number
@@ -165,14 +164,15 @@ export function buildApiParams(config: DatasetConfig, params: {
   return urlParams
 }
 
-// === DETECTEUR DE FILTRES MULTIPLES ===
 export function needsMultipleQueries(params: ReturnType<typeof parseQueryParams>): boolean {
   return params.types.length > 1
     || params.categories.length > 1
     || params.etats.length > 1
+    || params.tarifs.length > 1
+    || params.horaires.length > 1
+    || params.accessibilite.length > 1
 }
 
-// === EXECUTEUR DE REQUETES MULTIPLES ===
 export async function executeMultipleQueries<T extends ApiRecord>(
   queries: Array<() => Promise<ApiResponse<T>>>,
   logPrefix: string,

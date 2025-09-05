@@ -10,9 +10,10 @@ export const useEspacesVertsStore = defineStore('espaces-verts', () => {
       search: '',
       types: [],
       categories: [],
-      arrondissements: []
+      arrondissements: [],
+      horaires: [],
     },
-    filterFields: ['types', 'categories', 'arrondissements'],
+    filterFields: ['types', 'categories', 'arrondissements', 'horaires'],
     storeKey: 'espaces-verts',
     lazyLoading: {
       initialLoadSize: 20,

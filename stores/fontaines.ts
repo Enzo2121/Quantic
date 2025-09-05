@@ -11,8 +11,9 @@ export const useFontainesStore = defineStore('fontaines', () => {
       types: [],
       etats: [],
       arrondissements: [],
+      accessibilite: [],
     },
-    filterFields: ['types', 'etats', 'arrondissements'],
+    filterFields: ['types', 'etats', 'arrondissements', 'accessibilite'],
     storeKey: 'fontaines',
     lazyLoading: {
       initialLoadSize: 20,
@@ -22,4 +23,3 @@ export const useFontainesStore = defineStore('fontaines', () => {
     },
   })
 })
-  

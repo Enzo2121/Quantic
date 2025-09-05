@@ -43,7 +43,8 @@
     "@internationalized/date": "^3.7.0",
     "@unovis/ts": "^1.6.0",
     "@unovis/vue": "^1.6.0",
-    "leaflet": "^1.9.4"
+    "leaflet": "^1.9.4",
+    "leaflet.markercluster": "^1.5.3"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^4.10.1",
@@ -52,6 +53,7 @@
     "@nuxtjs/color-mode": "^3.5.2",
     "@pinia/nuxt": "^0.5.1",
     "@types/leaflet": "^1.9.12",
+    "@types/leaflet.markercluster": "^1.5.6",
     "@unocss/eslint-plugin": "^66.0.0",
     "@unocss/nuxt": "^66.0.0",
     "@vee-validate/zod": "^4.15.0",

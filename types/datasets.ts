@@ -33,6 +33,8 @@ export interface EquipementSportifFilters {
   search: string
   types: string[]
   arrondissements: string[]
+  tarifs: string[]
+  horaires: string[]
 }
 
 export interface EquipementSportifState {
@@ -95,6 +97,7 @@ export interface EspaceVertFilters {
   types: string[]
   categories: string[]
   arrondissements: string[]
+  horaires: string[]
 }
 
 export interface EspaceVertState {
@@ -180,6 +183,9 @@ export interface FilterOptions {
   types?: SelectOption[]
   arrondissements?: SelectOption[]
   etats?: SelectOption[]
+  categories?: SelectOption[]
+  tarifs?: SelectOption[]
+  horaires?: SelectOption[]
 }
 
 export interface PaginationState {

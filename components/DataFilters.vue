@@ -14,22 +14,34 @@ interface Props {
   selectedCategories?: string[]
   selectedArrondissements: string[]
   selectedEtats?: string[]
+  selectedTarifs?: string[]
+  selectedHoraires?: string[]
   typeOptions: SelectOption[]
   categorieOptions?: SelectOption[]
   arrondissementOptions: SelectOption[]
   etatOptions?: SelectOption[]
+  tarifOptions?: SelectOption[]
+  horaireOptions?: SelectOption[]
   showCategorieFilter?: boolean
   showEtatFilter?: boolean
+  showTarifFilter?: boolean
+  showHoraireFilter?: boolean
   isLoadingOptions?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
   selectedCategories: () => [],
   selectedEtats: () => [],
+  selectedTarifs: () => [],
+  selectedHoraires: () => [],
   categorieOptions: () => [],
   etatOptions: () => [],
+  tarifOptions: () => [],
+  horaireOptions: () => [],
   showCategorieFilter: false,
   showEtatFilter: false,
+  showTarifFilter: false,
+  showHoraireFilter: false,
   isLoadingOptions: false,
 })
 
@@ -39,6 +51,8 @@ const emit = defineEmits<{
   'update:selectedCategories': [value: string[]]
   'update:selectedArrondissements': [value: string[]]
   'update:selectedEtats': [value: string[]]
+  'update:selectedTarifs': [value: string[]]
+  'update:selectedHoraires': [value: string[]]
   'reset': []
 }>()
 
@@ -47,6 +61,8 @@ const isTypeOpen = ref(false)
 const isCategorieOpen = ref(false)
 const isArrondissementOpen = ref(false)
 const isEtatOpen = ref(false)
+const isTarifOpen = ref(false)
+const isHoraireOpen = ref(false)
 
 const debouncedUpdate = useDebounceFn((value: string) => {
   emit('update:search', value)
@@ -94,6 +110,22 @@ function toggleEtatOption(value: string) {
   emit('update:selectedEtats', newValue)
 }
 
+function toggleTarifOption(value: string) {
+  const newValue = props.selectedTarifs.includes(value)
+    ? props.selectedTarifs.filter(v => v !== value)
+    : [...props.selectedTarifs, value]
+
+  emit('update:selectedTarifs', newValue)
+}
+
+function toggleHoraireOption(value: string) {
+  const newValue = props.selectedHoraires.includes(value)
+    ? props.selectedHoraires.filter(v => v !== value)
+    : [...props.selectedHoraires, value]
+
+  emit('update:selectedHoraires', newValue)
+}
+
 function removeTypeOption(value: string) {
   emit('update:selectedTypes', props.selectedTypes.filter(v => v !== value))
 }
@@ -108,6 +140,14 @@ function removeCategorieOption(value: string) {
 
 function removeEtatOption(value: string) {
   emit('update:selectedEtats', props.selectedEtats.filter(v => v !== value))
+}
+
+function removeTarifOption(value: string) {
+  emit('update:selectedTarifs', props.selectedTarifs.filter(v => v !== value))
+}
+
+function removeHoraireOption(value: string) {
+  emit('update:selectedHoraires', props.selectedHoraires.filter(v => v !== value))
 }
 
 function clearTypes() {
@@ -126,6 +166,14 @@ function clearEtats() {
   emit('update:selectedEtats', [])
 }
 
+function clearTarifs() {
+  emit('update:selectedTarifs', [])
+}
+
+function clearHoraires() {
+  emit('update:selectedHoraires', [])
+}
+
 function clearAll() {
   searchInput.value = ''
   emit('update:search', '')
@@ -133,6 +181,8 @@ function clearAll() {
   emit('update:selectedCategories', [])
   emit('update:selectedArrondissements', [])
   emit('update:selectedEtats', [])
+  emit('update:selectedTarifs', [])
+  emit('update:selectedHoraires', [])
 }
 </script>
 
@@ -177,7 +227,6 @@ function clearAll() {
               :aria-expanded="isTypeOpen"
               :disabled="isLoadingOptions"
               class="w-full justify-between"
-              :class="{ 'border-[#5f259f] bg-[#5f259f]/10': selectedTypes.length > 1 }"
             >
               <span v-if="isLoadingOptions" class="flex items-center text-muted-foreground">
                 <Icon name="i-lucide-loader-2" class="mr-2 h-4 w-4 animate-spin" />
@@ -189,7 +238,7 @@ function clearAll() {
               <span v-else-if="selectedTypes.length === 1">
                 {{ selectedTypes[0] }}
               </span>
-              <span v-else class="text-[#5f259f] font-medium">
+              <span v-else class="font-medium">
                 {{ selectedTypes.length }} sélectionné(s)
               </span>
               <Icon v-if="!isLoadingOptions" name="i-lucide-chevrons-up-down" class="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -251,7 +300,6 @@ function clearAll() {
               :aria-expanded="isCategorieOpen"
               :disabled="isLoadingOptions"
               class="w-full justify-between"
-              :class="{ 'border-[#5f259f] bg-[#5f259f]/10': selectedCategories.length > 1 }"
             >
               <span v-if="isLoadingOptions" class="flex items-center text-muted-foreground">
                 <Icon name="i-lucide-loader-2" class="mr-2 h-4 w-4 animate-spin" />
@@ -263,7 +311,7 @@ function clearAll() {
               <span v-else-if="selectedCategories.length === 1">
                 {{ selectedCategories[0] }}
               </span>
-              <span v-else class="text-[#5f259f] font-medium">
+              <span v-else class="font-medium">
                 {{ selectedCategories.length }} sélectionné(s)
               </span>
               <Icon v-if="!isLoadingOptions" name="i-lucide-chevrons-up-down" class="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -395,7 +443,6 @@ function clearAll() {
                 :aria-expanded="isEtatOpen"
                 :disabled="isLoadingOptions"
                 class="w-full justify-between"
-                :class="{ 'border-[#5f259f] bg-[#5f259f]/10': selectedEtats.length > 1 }"
               >
                 <span v-if="isLoadingOptions" class="flex items-center text-muted-foreground">
                   <Icon name="i-lucide-loader-2" class="mr-2 h-4 w-4 animate-spin" />
@@ -407,7 +454,7 @@ function clearAll() {
                 <span v-else-if="selectedEtats.length === 1">
                   {{ selectedEtats[0] }}
                 </span>
-                <span v-else class="text-[#5f259f] font-medium">
+                <span v-else class="font-medium">
                   {{ selectedEtats.length }} sélectionné(s)
                 </span>
                 <Icon v-if="!isLoadingOptions" name="i-lucide-chevrons-up-down" class="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -457,6 +504,156 @@ function clearAll() {
           <Button class="w-full px-0" variant="outline" @click="clearAll">
             <Icon name="i-lucide-trash-2" class="mr-2 h-4 w-4" />
             Supprimer les filtres
+          </Button>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
+      <div v-if="showTarifFilter" class="space-y-2">
+        <Label class="flex items-center gap-2">
+          <Icon name="i-lucide-euro" class="h-4 w-4" />
+          Tarification
+          <Badge v-if="selectedTarifs.length > 1" variant="secondary" class="text-xs">
+            {{ selectedTarifs.length }} sélectionnés
+          </Badge>
+        </Label>
+
+        <Popover v-model:open="isTarifOpen">
+          <PopoverTrigger as-child>
+            <Button
+              variant="outline"
+              role="combobox"
+              :aria-expanded="isTarifOpen"
+              :disabled="isLoadingOptions"
+              class="w-full justify-between"
+            >
+              <span v-if="isLoadingOptions" class="flex items-center text-muted-foreground">
+                <Icon name="i-lucide-loader-2" class="mr-2 h-4 w-4 animate-spin" />
+                Chargement...
+              </span>
+              <span v-else-if="selectedTarifs.length === 0" class="text-muted-foreground">
+                Sélectionner tarification...
+              </span>
+              <span v-else-if="selectedTarifs.length === 1">
+                {{ selectedTarifs[0] }}
+              </span>
+              <span v-else class="font-medium">
+                {{ selectedTarifs.length }} sélectionné(s)
+              </span>
+              <Icon v-if="!isLoadingOptions" name="i-lucide-chevrons-up-down" class="ml-2 h-4 w-4 shrink-0 opacity-50" />
+            </Button>
+          </PopoverTrigger>
+
+          <PopoverContent class="w-full p-0" align="start">
+            <Command>
+              <CommandGroup class="max-h-48 overflow-auto">
+                <CommandItem
+                  v-for="option in tarifOptions"
+                  :key="option.value"
+                  :value="option.value"
+                  @select="toggleTarifOption(option.value)"
+                >
+                  <Icon
+                    :name="selectedTarifs.includes(option.value) ? 'i-lucide-check' : 'i-lucide-circle'"
+                    class="mr-2 h-4 w-4"
+                    :class="{ 'opacity-0': !selectedTarifs.includes(option.value) }"
+                  />
+                  <span>{{ option.label }}</span>
+                  <span v-if="option.count" class="ml-auto text-xs text-muted-foreground">({{ option.count }})</span>
+                </CommandItem>
+              </CommandGroup>
+            </Command>
+          </PopoverContent>
+        </Popover>
+
+        <div v-if="selectedTarifs.length > 0" class="flex flex-wrap gap-1">
+          <Badge
+            v-for="tarif in selectedTarifs"
+            :key="tarif"
+            variant="secondary"
+            class="cursor-pointer hover:bg-quantic hover:text-white"
+            @click="removeTarifOption(tarif)"
+          >
+            {{ tarif }}
+            <Icon name="i-lucide-x" class="ml-1 h-3 w-3" />
+          </Badge>
+          <Button v-if="selectedTarifs.length > 1" variant="ghost" size="sm" @click="clearTarifs">
+            Tout effacer
+          </Button>
+        </div>
+      </div>
+
+      <div v-if="showHoraireFilter" class="space-y-2">
+        <Label class="flex items-center gap-2">
+          <Icon name="i-lucide-clock" class="h-4 w-4" />
+          Horaires d'ouverture
+          <Badge v-if="selectedHoraires.length > 1" variant="secondary" class="text-xs">
+            {{ selectedHoraires.length }} sélectionnés
+          </Badge>
+        </Label>
+
+        <Popover v-model:open="isHoraireOpen">
+          <PopoverTrigger as-child>
+            <Button
+              variant="outline"
+              role="combobox"
+              :aria-expanded="isHoraireOpen"
+              :disabled="isLoadingOptions"
+              class="w-full justify-between"
+            >
+              <span v-if="isLoadingOptions" class="flex items-center text-muted-foreground">
+                <Icon name="i-lucide-loader-2" class="mr-2 h-4 w-4 animate-spin" />
+                Chargement...
+              </span>
+              <span v-else-if="selectedHoraires.length === 0" class="text-muted-foreground">
+                Sélectionner horaires...
+              </span>
+              <span v-else-if="selectedHoraires.length === 1">
+                {{ selectedHoraires[0] }}
+              </span>
+              <span v-else class="font-medium">
+                {{ selectedHoraires.length }} sélectionné(s)
+              </span>
+              <Icon v-if="!isLoadingOptions" name="i-lucide-chevrons-up-down" class="ml-2 h-4 w-4 shrink-0 opacity-50" />
+            </Button>
+          </PopoverTrigger>
+
+          <PopoverContent class="w-full p-0" align="start">
+            <Command>
+              <CommandGroup class="max-h-48 overflow-auto">
+                <CommandItem
+                  v-for="option in horaireOptions"
+                  :key="option.value"
+                  :value="option.value"
+                  @select="toggleHoraireOption(option.value)"
+                >
+                  <Icon
+                    :name="selectedHoraires.includes(option.value) ? 'i-lucide-check' : 'i-lucide-circle'"
+                    class="mr-2 h-4 w-4"
+                    :class="{ 'opacity-0': !selectedHoraires.includes(option.value) }"
+                  />
+                  <span>{{ option.label }}</span>
+                  <span v-if="option.count" class="ml-auto text-xs text-muted-foreground">({{ option.count }})</span>
+                </CommandItem>
+              </CommandGroup>
+            </Command>
+          </PopoverContent>
+        </Popover>
+
+        <div v-if="selectedHoraires.length > 0" class="flex flex-wrap gap-1">
+          <Badge
+            v-for="horaire in selectedHoraires"
+            :key="horaire"
+            variant="secondary"
+            class="cursor-pointer hover:bg-quantic hover:text-white"
+            @click="removeHoraireOption(horaire)"
+          >
+            {{ horaire }}
+            <Icon name="i-lucide-x" class="ml-1 h-3 w-3" />
+          </Badge>
+          <Button v-if="selectedHoraires.length > 1" variant="ghost" size="sm" @click="clearHoraires">
+            Tout effacer
           </Button>
         </div>
       </div>

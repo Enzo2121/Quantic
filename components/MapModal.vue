@@ -72,8 +72,8 @@ function refreshMap() {
 }
 
 function centerOnParis() {
-  if (selectedItem && mapView.value) {
-    mapView.value.flyToLocation(selectedItem.latitude || 48.8566, selectedItem.longitude || 2.3522)
+  if (props.selectedItem && mapView.value) {
+    mapView.value.flyToLocation(props.selectedItem.latitude || 48.8566, props.selectedItem.longitude || 2.3522)
   }
   else if (mapView.value) {
     mapView.value.flyToLocation(48.8566, 2.3522)
@@ -132,8 +132,8 @@ const showEtatFilter = computed(() => props.currentStore === 'fontaines')
 
 <template>
   <Dialog v-model:open="isOpen">
-    <DialogContent class="h-[90vh] max-w-7xl w-[95vw] gap-0 p-0">
-      <DialogHeader class="border-b bg-background px-6 py-4">
+    <DialogContent class="max-h-[90vh] h-auto max-w-7xl w-[95vw] gap-0 p-0 flex flex-col">
+      <DialogHeader class="border-b bg-background px-6 py-4 flex-shrink-0">
         <div class="flex items-center justify-between">
           <div class="space-y-1">
             <DialogTitle class="text-quantic text-xl font-bold font-nexa">
@@ -167,40 +167,35 @@ const showEtatFilter = computed(() => props.currentStore === 'fontaines')
         </div>
       </DialogHeader>
 
-      <Collapsible class="border-b">
-        <CollapsibleTrigger as-child>
-          <Button variant="ghost" class="h-auto w-full justify-between px-6 py-3">
-            <div class="flex items-center gap-2">
-              <Icon name="i-lucide-filter" class="h-4 w-4" />
-              <span class="font-medium">Filtrer les données</span>
-            </div>
-            <Icon name="i-lucide-chevron-down" class="h-4 w-4 transition-transform duration-200" />
-          </Button>
-        </CollapsibleTrigger>
-        <CollapsibleContent class="px-6 pb-4">
-          <DataFilters
-            :search="mapFilters.search || ''"
-            :selected-types="mapFilters.types || []"
-            :selected-categories="mapFilters.categories || []"
-            :selected-arrondissements="mapFilters.arrondissements || []"
-            :selected-etats="mapFilters.etats || []"
-            :type-options="filterOptions.types || []"
-            :categorie-options="filterOptions.categories || []"
-            :arrondissement-options="filterOptions.arrondissements || []"
-            :etat-options="filterOptions.etats || []"
-            :show-categorie-filter="showCategorieFilter"
-            :show-etat-filter="showEtatFilter"
-            @update:search="handleSearchUpdate"
-            @update:selected-types="handleTypesUpdate"
-            @update:selected-categories="handleCategoriesUpdate"
-            @update:selected-arrondissements="handleArrondissementsUpdate"
-            @update:selected-etats="handleEtatsUpdate"
-            @reset="handleFiltersReset"
-          />
-        </CollapsibleContent>
-      </Collapsible>
+      <!-- Filtres toujours visibles -->
+      <div class="border-b bg-background px-6 py-4 flex-shrink-0">
+        <div class="flex items-center gap-2 mb-3">
+          <Icon name="i-lucide-filter" class="h-4 w-4" />
+          <span class="font-medium">Filtres</span>
+        </div>
+        <DataFilters
+          :search="mapFilters.search || ''"
+          :selected-types="mapFilters.types || []"
+          :selected-categories="mapFilters.categories || []"
+          :selected-arrondissements="mapFilters.arrondissements || []"
+          :selected-etats="mapFilters.etats || []"
+          :type-options="filterOptions.types || []"
+          :categorie-options="filterOptions.categories || []"
+          :arrondissement-options="filterOptions.arrondissements || []"
+          :etat-options="filterOptions.etats || []"
+          :show-categorie-filter="showCategorieFilter"
+          :show-etat-filter="showEtatFilter"
+          @update:search="handleSearchUpdate"
+          @update:selected-types="handleTypesUpdate"
+          @update:selected-categories="handleCategoriesUpdate"
+          @update:selected-arrondissements="handleArrondissementsUpdate"
+          @update:selected-etats="handleEtatsUpdate"
+          @reset="handleFiltersReset"
+        />
+      </div>
 
-      <div class="flex-1 bg-muted/20 p-6">
+      <!-- Carte avec hauteur réduite -->
+      <div class="flex-1 bg-muted/20 p-4 min-h-0 overflow-hidden">
         <div v-if="loading" class="h-full flex items-center justify-center">
           <div class="text-center space-y-4">
             <Icon name="i-lucide-loader-2" class="text-quantic mx-auto h-8 w-8 animate-spin" />
@@ -228,15 +223,15 @@ const showEtatFilter = computed(() => props.currentStore === 'fontaines')
           v-else
           ref="mapView"
           :items="items"
-          height="calc(90vh - 200px)"
-          :zoom="selectedItem ? 14 : 12"
-          :center="selectedItem ? [selectedItem.latitude || 48.8566, selectedItem.longitude || 2.3522] : [48.8566, 2.3522]"
-          :show-clusters="!selectedItem"
-          class="overflow-hidden border rounded-lg"
+          height="400px"
+          :zoom="props.selectedItem ? 14 : 12"
+          :center="props.selectedItem ? [props.selectedItem.latitude || 48.8566, props.selectedItem.longitude || 2.3522] : [48.8566, 2.3522]"
+          :show-clusters="!props.selectedItem"
+          class="h-[400px] w-full overflow-hidden border rounded-lg"
         />
       </div>
 
-      <div class="flex items-center justify-between border-t bg-background px-6 py-4">
+      <div class="flex items-center justify-between border-t bg-background px-6 py-4 flex-shrink-0">
         <div class="flex items-center gap-2">
           <Button
             variant="outline"
@@ -255,7 +250,7 @@ const showEtatFilter = computed(() => props.currentStore === 'fontaines')
             @click="centerOnParis"
           >
             <Icon name="i-lucide-home" class="mr-2 h-4 w-4" />
-            {{ selectedItem ? 'Centrer sur le point' : 'Centrer sur Paris' }}
+            {{ props.selectedItem ? 'Centrer sur le point' : 'Centrer sur Paris' }}
           </Button>
         </div>
 

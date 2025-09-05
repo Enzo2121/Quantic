@@ -10,8 +10,10 @@ export const useEquipementsSportifsStore = defineStore('equipements-sportifs', (
       search: '',
       types: [],
       arrondissements: [],
+      tarifs: [],
+      horaires: [],
     },
-    filterFields: ['types', 'arrondissements'],
+    filterFields: ['types', 'arrondissements', 'tarifs', 'horaires'],
     storeKey: 'equipements-sportifs',
     lazyLoading: {
       initialLoadSize: 20,

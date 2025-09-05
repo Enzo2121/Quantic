@@ -29,7 +29,7 @@ export interface NuxtDataStoreConfig<_T extends BaseDataItem, F extends BaseFilt
   defaultFilters: F
   filterFields: (keyof F)[]
   storeKey: string
-  lazyLoading?: Partial<LazyLoadingConfig>,
+  lazyLoading?: Partial<LazyLoadingConfig>
 }
 
 export function useNuxtDataStore<T extends BaseDataItem, F extends BaseFilters>(
@@ -41,7 +41,7 @@ export function useNuxtDataStore<T extends BaseDataItem, F extends BaseFilters>(
     mediumLoadSize: 200,
     fullLoadSize: 1000,
     autoLoadOnSearch: true,
-    ...config.lazyLoading
+    ...config.lazyLoading,
   }
 
   const filters = ref<F>({ ...config.defaultFilters })
@@ -110,15 +110,26 @@ export function useNuxtDataStore<T extends BaseDataItem, F extends BaseFilters>(
 
   const data = computed<T[]>(() => {
     if (!apiResponse.value?.records) {
-      console.log(`[${config.storeKey}] No records in API response`)
+      console.warn(`[${config.storeKey}] No records in API response`)
       return []
     }
 
-    console.log(`[${config.storeKey}] Processing ${apiResponse.value.records.length} records`)
-    const sorted = [...apiResponse.value.records]
+    console.warn(`[${config.storeKey}] Processing ${apiResponse.value.records.length} records`)
+    
+    // Déduplication robuste basée sur l'ID et les propriétés clés
+    const uniqueRecords = new Map<string, T>()
+    
+    apiResponse.value.records.forEach((record) => {
+      const uniqueKey = `${record.id || record.nom}_${record.type}_${record.adresse}`
+      if (!uniqueRecords.has(uniqueKey)) {
+        uniqueRecords.set(uniqueKey, record)
+      }
+    })
+    
+    const sorted = Array.from(uniqueRecords.values())
 
     if (sortBy.value) {
-      console.log(`[${config.storeKey}] Sorting by ${sortBy.value} (${sortOrder.value})`)
+      console.warn(`[${config.storeKey}] Sorting by ${sortBy.value} (${sortOrder.value})`)
       sorted.sort((a, b) => {
         const aVal = (a as any)[sortBy.value!]
         const bVal = (b as any)[sortBy.value!]
@@ -143,38 +154,52 @@ export function useNuxtDataStore<T extends BaseDataItem, F extends BaseFilters>(
       })
     }
 
-    console.log(`[${config.storeKey}] Final data: ${sorted.length} records`)
+    console.warn(`[${config.storeKey}] Final data: ${sorted.length} unique records from ${apiResponse.value.records.length} total`)
     return sorted
   })
 
-  const currentPageData = computed(() => data.value)
+  // Pagination côté client pour éviter les doublons
+  const currentPageData = computed(() => {
+    const allData = data.value
+    const startIndex = (pagination.value.page - 1) * pagination.value.pageSize
+    const endIndex = startIndex + pagination.value.pageSize
+    
+    const paginatedData = allData.slice(startIndex, endIndex)
+    console.warn(`[${config.storeKey}] Paginating: ${startIndex}-${endIndex} from ${allData.length} total records`)
+    
+    return paginatedData
+  })
 
   async function loadAllDataForOptions() {
-    if (optionsLoaded.value || isLoadingOptions.value) return
+    if (optionsLoaded.value || isLoadingOptions.value) {
+      return
+    }
 
     isLoadingOptions.value = true
-    console.log(`[${config.storeKey}] Loading all data for filter options...`)
+    console.warn(`[${config.storeKey}] Loading all data for filter options...`)
 
     try {
       const allData = await $fetch<{ records: T[], nhits: number }>(config.endpoint, {
         query: {
           page: 1,
           pageSize: Math.min(500, lazyConfig.fullLoadSize),
-        }
+        },
       })
 
       allDataForOptions.value = allData.records || []
       optionsLoaded.value = true
 
-      console.log(`[${config.storeKey}] Loaded ${allDataForOptions.value.length} records for options`)
-    } catch (error) {
+      console.warn(`[${config.storeKey}] Loaded ${allDataForOptions.value.length} records for options`)
+    }
+    catch (error) {
       console.error(`[${config.storeKey}] Error loading options data:`, error)
       if (data.value.length > 0) {
         allDataForOptions.value = data.value
         optionsLoaded.value = true
-        console.log(`[${config.storeKey}] Using current data as fallback for options`)
+        console.warn(`[${config.storeKey}] Using current data as fallback for options`)
       }
-    } finally {
+    }
+    finally {
       isLoadingOptions.value = false
     }
   }
@@ -183,7 +208,7 @@ export function useNuxtDataStore<T extends BaseDataItem, F extends BaseFilters>(
     await loadAllDataForOptions()
   })
 
-  const totalItems = computed(() => apiResponse.value?.nhits || 0)
+  const totalItems = computed(() => data.value.length)
   const totalPages = computed(() => Math.ceil(totalItems.value / pagination.value.pageSize))
 
   const loading = computed(() => status.value === 'pending')
@@ -191,7 +216,7 @@ export function useNuxtDataStore<T extends BaseDataItem, F extends BaseFilters>(
 
   const filterOptions = computed(() => {
     const dataSource = optionsLoaded.value ? allDataForOptions.value : data.value
-    console.log(`[${config.storeKey}] Calculating filterOptions from ${dataSource.length} records (${optionsLoaded.value ? 'complete' : 'partial'} data)`)
+    console.warn(`[${config.storeKey}] Calculating filterOptions from ${dataSource.length} records (${optionsLoaded.value ? 'complete' : 'partial'} data)`)
 
     const options: Record<string, SelectOption[]> = {}
 
@@ -202,16 +227,44 @@ export function useNuxtDataStore<T extends BaseDataItem, F extends BaseFilters>(
         const propertyName = field === 'types'
           ? 'type'
           : field === 'arrondissements'
-          ? 'arrondissement'
-          : field === 'categories'
-          ? 'categorie'
-          : field === 'etats'
-          ? 'etat'
-          : String(field)
+            ? 'arrondissement'
+            : field === 'categories'
+              ? 'categorie'
+              : field === 'etats'
+                ? 'etat'
+                : field === 'tarifs'
+                  ? 'payant'
+                  : field === 'horaires'
+                    ? 'horaires'
+                    : field === 'accessibilite'
+                      ? 'accessibilite'
+                      : String(field)
 
-        const value = (item as any)[propertyName]
-        if (value && typeof value === 'string') {
-          fieldMap.set(value, (fieldMap.get(value) || 0) + 1)
+        if (field === 'tarifs' && (item as any).payant) {
+          const tarif = (item as any).payant.trim()
+          if (tarif && tarif !== 'Non spécifié') {
+            fieldMap.set(tarif, (fieldMap.get(tarif) || 0) + 1)
+          }
+        }
+        else if (field === 'horaires') {
+          if ((item as any).ouvert_24h === 'Oui') {
+            fieldMap.set('Ouvert 24h/24', (fieldMap.get('Ouvert 24h/24') || 0) + 1)
+          }
+          if ((item as any).horaires) {
+            const horaire = normalizeHoraire((item as any).horaires)
+            if (horaire) {
+              fieldMap.set(horaire, (fieldMap.get(horaire) || 0) + 1)
+            }
+          }
+          if ((item as any).canicule_ouverture === 'Oui') {
+            fieldMap.set('Ouverture prolongée canicule', (fieldMap.get('Ouverture prolongée canicule') || 0) + 1)
+          }
+        }
+        else {
+          const value = (item as any)[propertyName]
+          if (value && typeof value === 'string') {
+            fieldMap.set(value, (fieldMap.get(value) || 0) + 1)
+          }
         }
       })
 
@@ -224,50 +277,82 @@ export function useNuxtDataStore<T extends BaseDataItem, F extends BaseFilters>(
         .sort((a, b) => a.label.localeCompare(b.label))
 
       options[field as string] = fieldOptions
-      console.log(`[${config.storeKey}] Field ${String(field)}: ${fieldOptions.length} options`)
+      console.warn(`[${config.storeKey}] Field ${String(field)}: ${fieldOptions.length} options`)
     })
 
-    console.log(`[${config.storeKey}] FilterOptions calculated:`, Object.keys(options))
+    console.warn(`[${config.storeKey}] FilterOptions calculated:`, Object.keys(options))
     return options
   })
 
+  function normalizeHoraire(horaire: string): string | null {
+    if (!horaire || horaire === 'Non spécifié' || horaire.trim() === '') {
+      return null
+    }
+
+    const horaireStr = horaire.trim().toLowerCase()
+
+    if (horaireStr.includes('24h') || horaireStr.includes('24/24')) {
+      return 'Ouvert 24h/24'
+    }
+    
+    if (horaireStr.includes('renseigner') || horaireStr.includes('variable')) {
+      return 'Horaires variables'
+    }
+    
+    if (horaireStr.includes('été') || horaireStr.includes('estival')) {
+      return 'Horaires été'
+    }
+    
+    if (horaireStr.includes('hiver')) {
+      return 'Horaires hiver'
+    }
+    
+    if (horaireStr.match(/\d+h\d*\s*-\s*\d+h\d*/)) {
+      return 'Horaires fixes'
+    }
+
+    return 'Autres horaires'
+  }
+
   function getActiveFiltersCount() {
     let count = 0
-    if (filters.value.search && filters.value.search.trim()) count++
-    if (filters.value.types && filters.value.types.length > 0) count++
-    if (filters.value.arrondissements && filters.value.arrondissements.length > 0) count++
+    if (filters.value.search && filters.value.search.trim()) {
+      count++
+    }
+    if (filters.value.types && filters.value.types.length > 0) {
+      count++
+    }
+    if (filters.value.arrondissements && filters.value.arrondissements.length > 0) {
+      count++
+    }
 
-    if ('categories' in filters.value && filters.value.categories && filters.value.categories.length > 0) count++
-    if ('etats' in filters.value && filters.value.etats && filters.value.etats.length > 0) count++
+    if ('categories' in filters.value && filters.value.categories && filters.value.categories.length > 0) {
+      count++
+    }
+    if ('etats' in filters.value && filters.value.etats && filters.value.etats.length > 0) {
+      count++
+    }
 
     return count
   }
 
   function shouldLoadMoreForFilters(appliedFilters: Partial<F>) {
-    const hasSpecificFilters = (appliedFilters.types && appliedFilters.types.length > 0) ||
-                              (appliedFilters.arrondissements && appliedFilters.arrondissements.length > 0) ||
-                              ('categories' in appliedFilters && appliedFilters.categories && appliedFilters.categories.length > 0) ||
-                              ('etats' in appliedFilters && appliedFilters.etats && appliedFilters.etats.length > 0)
+    const hasSpecificFilters = (appliedFilters.types && appliedFilters.types.length > 0)
+      || (appliedFilters.arrondissements && appliedFilters.arrondissements.length > 0)
+      || ('categories' in appliedFilters && appliedFilters.categories && appliedFilters.categories.length > 0)
+      || ('etats' in appliedFilters && appliedFilters.etats && appliedFilters.etats.length > 0)
 
     return hasSpecificFilters && loadingMode.value === 'initial'
   }
 
   async function updateFilters(newFilters: Partial<F>) {
-    console.log(`[${config.storeKey}] Updating filters:`, newFilters)
-    Object.assign(filters.value, newFilters)
+    console.warn(`[${config.storeKey}] Updating filters:`, newFilters)
+    filters.value = { ...filters.value, ...newFilters }
     pagination.value.page = 1
 
-    if (newFilters.search && lazyConfig.autoLoadOnSearch) {
-      if (loadingMode.value === 'initial') {
-        await loadMoreData('medium')
-        return
-      }
-    }
-
-    if (shouldLoadMoreForFilters(newFilters)) {
-      console.log(`[${config.storeKey}] Specific filter applied, loading more data for better results`)
+    if (shouldLoadMoreForFilters(filters.value)) {
+      console.warn(`[${config.storeKey}] Specific filter applied, loading more data for better results`)
       await loadMoreData('medium')
-      return
     }
 
     await refresh()
@@ -277,7 +362,6 @@ export function useNuxtDataStore<T extends BaseDataItem, F extends BaseFilters>(
     pagination.value.page = page
     if (pageSize) {
       pagination.value.pageSize = pageSize
-      pagination.value.page = 1
     }
   }
 
@@ -288,47 +372,57 @@ export function useNuxtDataStore<T extends BaseDataItem, F extends BaseFilters>(
 
   async function reset() {
     filters.value = { ...config.defaultFilters }
-    pagination.value.page = 1
-    pagination.value.pageSize = lazyConfig.initialLoadSize
+    pagination.value = {
+      page: 1,
+      pageSize: lazyConfig.initialLoadSize,
+    }
     sortBy.value = null
     sortOrder.value = 'asc'
     loadingMode.value = 'initial'
     hasLoadedMore.value = false
+    await refresh()
   }
 
   async function loadMoreData(mode: 'medium' | 'full' = 'medium') {
-    if (isLoadingMore.value) return
+    if (isLoadingMore.value) {
+      return
+    }
 
-    if (loadingMode.value === 'full' && mode === 'medium') {
-      console.log(`[${config.storeKey}] Already have full data, no need to load ${mode}`)
+    if (loadingMode.value === 'full') {
+      console.warn(`[${config.storeKey}] Already have full data, no need to load ${mode}`)
       return
     }
 
     if (loadingMode.value === mode) {
-      console.log(`[${config.storeKey}] Already in ${mode} mode, no need to reload`)
+      console.warn(`[${config.storeKey}] Already in ${mode} mode, no need to reload`)
       return
     }
 
-    isLoadingMore.value = true
     const newPageSize = mode === 'medium' ? lazyConfig.mediumLoadSize : lazyConfig.fullLoadSize
 
-    console.log(`[${config.storeKey}] Loading more data: ${mode} mode (${newPageSize} items)`)
+    console.warn(`[${config.storeKey}] Loading more data: ${mode} mode (${newPageSize} items)`)
+
+    isLoadingMore.value = true
+    loadingMode.value = mode
+    pagination.value.pageSize = newPageSize
+    pagination.value.page = 1
 
     try {
-      pagination.value.pageSize = newPageSize
-      pagination.value.page = 1
-      loadingMode.value = mode
-      hasLoadedMore.value = true
-
       await refresh()
-    } finally {
+      hasLoadedMore.value = true
+    }
+    finally {
       isLoadingMore.value = false
     }
   }
 
   const canLoadMore = computed(() => {
-    if (loadingMode.value === 'full') return false
-    if (loadingMode.value === 'medium' && hasLoadedMore.value) return true
+    if (loadingMode.value === 'full') {
+      return false
+    }
+    if (loadingMode.value === 'medium' && hasLoadedMore.value) {
+      return true
+    }
     return loadingMode.value === 'initial'
   })
 
@@ -348,21 +442,23 @@ export function useNuxtDataStore<T extends BaseDataItem, F extends BaseFilters>(
       isLimitedByData,
       loadedItems: data.value.length,
       totalAvailable: totalItems.value,
-      loadingMode: loadingMode.value
+      loadingMode: loadingMode.value,
     }
   })
 
   function checkFilteredResults() {
-    if (!filterStatus.value.hasActiveFilters) return
+    if (!filterStatus.value.hasActiveFilters) {
+      return
+    }
 
     const loadedPercentage = (data.value.length / totalItems.value) * 100
 
     if (loadedPercentage < 30 && loadingMode.value === 'initial' && !isLoadingMore.value) {
-      console.log(`[${config.storeKey}] Auto-loading more data due to very limited results (${loadedPercentage.toFixed(1)}% loaded)`)
+      console.warn(`[${config.storeKey}] Auto-loading more data due to very limited results (${loadedPercentage.toFixed(1)}% loaded)`)
       loadMoreData('medium')
     }
     else if (loadedPercentage < 60 && loadingMode.value === 'medium' && !isLoadingMore.value && hasLoadedMore.value) {
-      console.log(`[${config.storeKey}] Auto-loading full data for better filter results (${loadedPercentage.toFixed(1)}% loaded)`)
+      console.warn(`[${config.storeKey}] Auto-loading full data for better filter results (${loadedPercentage.toFixed(1)}% loaded)`)
       loadMoreData('full')
     }
   }
@@ -376,7 +472,9 @@ export function useNuxtDataStore<T extends BaseDataItem, F extends BaseFilters>(
   }, { immediate: false })
 
   const smartLoadSuggestion = computed(() => {
-    if (!filterStatus.value.hasActiveFilters) return null
+    if (!filterStatus.value.hasActiveFilters) {
+      return null
+    }
 
     const loadedPercentage = (data.value.length / totalItems.value) * 100
 
@@ -384,7 +482,7 @@ export function useNuxtDataStore<T extends BaseDataItem, F extends BaseFilters>(
       return {
         type: 'medium' as const,
         reason: 'Filtres actifs détectés, chargement de plus de données recommandé',
-        expectedItems: lazyConfig.mediumLoadSize
+        expectedItems: lazyConfig.mediumLoadSize,
       }
     }
 
@@ -392,7 +490,7 @@ export function useNuxtDataStore<T extends BaseDataItem, F extends BaseFilters>(
       return {
         type: 'full' as const,
         reason: 'Pour voir tous les résultats filtrés',
-        expectedItems: lazyConfig.fullLoadSize
+        expectedItems: lazyConfig.fullLoadSize,
       }
     }
 

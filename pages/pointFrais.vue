@@ -55,6 +55,16 @@ async function handleEquipementsArrondissements(value: string[]) {
   await equipementsStore.updateFilters({ arrondissements: value })
 }
 
+async function handleEquipementsTarifs(value: string[]) {
+  await equipementsStore.updateFilters({ tarifs: value })
+}
+
+async function handleEquipementsHoraires(value: string[]) {
+  await equipementsStore.updateFilters({ horaires: value })
+}
+
+// Removed handleEquipementsAccessibilite function
+
 function handleEquipementsSort(sortBy: string, sortOrder: 'asc' | 'desc') {
   equipementsStore.updateSort(sortBy, sortOrder)
 }
@@ -125,6 +135,95 @@ function handleOpenMapModal(item: any) {
   selectedMapItem.value = item
   isMapModalOpen.value = true
 }
+
+// Gestionnaire pour les changements de filtres depuis la carte
+async function handleMapFiltersUpdate(newFilters: any) {
+  switch (activeTab.value) {
+    case 'equipements':
+      await equipementsStore.updateFilters(newFilters)
+      break
+    case 'espaces-verts':
+      await espacesVertsStore.updateFilters(newFilters)
+      break
+    case 'fontaines':
+      await fontainesStore.updateFilters(newFilters)
+      break
+  }
+}
+
+// Gestionnaires manquants pour espaces verts
+async function handleEspacesVertsSearch(value: string) {
+  await espacesVertsStore.updateFilters({ search: value })
+}
+
+async function handleEspacesVertsTypes(value: string[]) {
+  await espacesVertsStore.updateFilters({ types: value })
+}
+
+async function handleEspacesVertsCategories(value: string[]) {
+  await espacesVertsStore.updateFilters({ categories: value })
+}
+
+async function handleEspacesVertsArrondissements(value: string[]) {
+  await espacesVertsStore.updateFilters({ arrondissements: value })
+}
+
+async function handleEspacesVertsHoraires(value: string[]) {
+  await espacesVertsStore.updateFilters({ horaires: value })
+}
+
+// Removed handleEspacesVertsAccessibilite function
+
+function handleEspacesVertsSort(sortBy: string, sortOrder: 'asc' | 'desc') {
+  espacesVertsStore.updateSort(sortBy, sortOrder)
+}
+
+function handleEspacesVertsPage(page: number) {
+  espacesVertsStore.updatePagination(page)
+}
+
+function handleEspacesVertsPageSize(pageSize: number) {
+  espacesVertsStore.updatePagination(1, pageSize)
+}
+
+function handleEspacesVertsReset() {
+  espacesVertsStore.reset()
+}
+
+// Gestionnaires manquants pour fontaines
+async function handleFontainesSearch(value: string) {
+  await fontainesStore.updateFilters({ search: value })
+}
+
+async function handleFontainesTypes(value: string[]) {
+  await fontainesStore.updateFilters({ types: value })
+}
+
+async function handleFontainesArrondissements(value: string[]) {
+  await fontainesStore.updateFilters({ arrondissements: value })
+}
+
+async function handleFontainesEtats(value: string[]) {
+  await fontainesStore.updateFilters({ etats: value })
+}
+
+// Removed handleFontainesAccessibilite function
+
+function handleFontainesSort(sortBy: string, sortOrder: 'asc' | 'desc') {
+  fontainesStore.updateSort(sortBy, sortOrder)
+}
+
+function handleFontainesPage(page: number) {
+  fontainesStore.updatePagination(page)
+}
+
+function handleFontainesPageSize(pageSize: number) {
+  fontainesStore.updatePagination(1, pageSize)
+}
+
+function handleFontainesReset() {
+  fontainesStore.reset()
+}
 </script>
 
 <template>
@@ -175,12 +274,20 @@ function handleOpenMapModal(item: any) {
                 :search="(() => equipementsStore.filters.search)()"
                 :selected-types="(() => equipementsStore.filters.types)()"
                 :selected-arrondissements="(() => equipementsStore.filters.arrondissements)()"
+                :selected-tarifs="(() => equipementsStore.filters.tarifs)()"
+                :selected-horaires="(() => equipementsStore.filters.horaires)()"
                 :type-options="equipementsStore.filterOptions.types"
                 :arrondissement-options="equipementsStore.filterOptions.arrondissements"
+                :tarif-options="equipementsStore.filterOptions.tarifs"
+                :horaire-options="equipementsStore.filterOptions.horaires"
+                :show-tarif-filter="true"
+                :show-horaire-filter="true"
                 :is-loading-options="equipementsStore.isLoadingOptions"
                 @update:search="handleEquipementsSearch"
                 @update:selected-types="handleEquipementsTypes"
                 @update:selected-arrondissements="handleEquipementsArrondissements"
+                @update:selected-tarifs="handleEquipementsTarifs"
+                @update:selected-horaires="handleEquipementsHoraires"
                 @reset="handleEquipementsReset"
               />
             </div>
@@ -227,15 +334,19 @@ function handleOpenMapModal(item: any) {
                 :selected-types="espacesVertsStore.filters.types"
                 :selected-categories="espacesVertsStore.filters.categories"
                 :selected-arrondissements="espacesVertsStore.filters.arrondissements"
+                :selected-horaires="espacesVertsStore.filters.horaires"
                 :type-options="espacesVertsStore.filterOptions.types"
                 :categorie-options="espacesVertsStore.filterOptions.categories"
                 :arrondissement-options="espacesVertsStore.filterOptions.arrondissements"
+                :horaire-options="espacesVertsStore.filterOptions.horaires"
                 :show-categorie-filter="true"
+                :show-horaire-filter="true"
                 :is-loading-options="espacesVertsStore.isLoadingOptions"
                 @update:search="handleEspacesVertsSearch"
                 @update:selected-types="handleEspacesVertsTypes"
                 @update:selected-categories="handleEspacesVertsCategories"
                 @update:selected-arrondissements="handleEspacesVertsArrondissements"
+                @update:selected-horaires="handleEspacesVertsHoraires"
                 @reset="handleEspacesVertsReset"
               />
             </div>
@@ -338,6 +449,8 @@ function handleOpenMapModal(item: any) {
       :map-filters="currentStoreData.searchParams"
       :filter-options="currentStoreData.filterOptions"
       :selected-item="selectedMapItem"
+      @update:filters="handleMapFiltersUpdate"
+      @update:map-filters="handleMapFiltersUpdate"
     />
   </div>
 </template>
