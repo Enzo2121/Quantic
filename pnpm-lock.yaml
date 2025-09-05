@@ -17,24 +17,18 @@ importers:
       '@internationalized/date':
         specifier: ^3.7.0
         version: 3.7.0
-      '@number-flow/vue':
-        specifier: ^0.4.5
-        version: 0.4.5(vue@3.5.13(typescript@5.8.2))
-      '@tanstack/vue-table':
-        specifier: ^8.21.2
-        version: 8.21.2(vue@3.5.13(typescript@5.8.2))
       '@unovis/ts':
-        specifier: ^1.5.1
-        version: 1.5.1
+        specifier: ^1.6.0
+        version: 1.6.0
       '@unovis/vue':
-        specifier: ^1.5.1
-        version: 1.5.1(@unovis/ts@1.5.1)(vue@3.5.13(typescript@5.8.2))
-      embla-carousel:
-        specifier: ^8.5.2
-        version: 8.5.2
-      embla-carousel-vue:
-        specifier: ^8.5.2
-        version: 8.5.2(vue@3.5.13(typescript@5.8.2))
+        specifier: ^1.6.0
+        version: 1.6.0(@unovis/ts@1.6.0)(vue@3.5.13(typescript@5.8.2))
+      leaflet:
+        specifier: ^1.9.4
+        version: 1.9.4
+      leaflet.markercluster:
+        specifier: ^1.5.3
+        version: 1.5.3(leaflet@1.9.4)
     devDependencies:
       '@antfu/eslint-config':
         specifier: ^4.10.1
@@ -51,6 +45,12 @@ importers:
       '@pinia/nuxt':
         specifier: ^0.5.1
         version: 0.5.5(magicast@0.3.5)(typescript@5.8.2)(vue@3.5.13(typescript@5.8.2))
+      '@types/leaflet':
+        specifier: ^1.9.12
+        version: 1.9.20
+      '@types/leaflet.markercluster':
+        specifier: ^1.5.6
+        version: 1.5.6
       '@unocss/eslint-plugin':
         specifier: ^66.0.0
         version: 66.0.0(eslint@9.22.0(jiti@2.4.2))(typescript@5.8.2)
@@ -61,9 +61,6 @@ importers:
         specifier: ^4.15.0
         version: 4.15.0(vue@3.5.13(typescript@5.8.2))(zod@3.24.2)
       '@vueuse/core':
-        specifier: ^12.2.0
-        version: 12.8.2(typescript@5.8.2)
-      '@vueuse/math':
         specifier: ^12.2.0
         version: 12.8.2(typescript@5.8.2)
       '@vueuse/nuxt':
@@ -764,11 +761,6 @@ packages:
     resolution: {integrity: sha512-nIh/M6Kh3ZtOmlY00DaUYB4xeeV6F3/ts1l29iwl3/cfyY/OuCfUx+v08zgx8TKPTifXRcjjqVQ4KB2zOYSbyw==}
     engines: {node: '>=18.18.0'}
 
-  '@number-flow/vue@0.4.5':
-    resolution: {integrity: sha512-Yj8yH9NS8JlsSFLf6uTcpIynGHKAht45HgE1QIBC4YJR+P93UoADTatBgFYk17YgFt2oVn7K9rVi27ft/8C8bA==}
-    peerDependencies:
-      vue: ^3
-
   '@nuxt/cli@3.24.0':
     resolution: {integrity: sha512-D/rCodMHecznWZAxsb81lKSMhCcWIUI6TyEDQ3WIl2bTNBn4WvIYrZP3rIPJn7X4A+/CG5H8yhKDVP6Mq7XopA==}
     engines: {node: ^16.10.0 || >=18.0.0}
@@ -1274,18 +1266,8 @@ packages:
   '@swc/helpers@0.5.15':
     resolution: {integrity: sha512-JQ5TuMi45Owi4/BIMAJBoSQoOJu12oOk/gADqlcUL9JEdHB8vyjUSsxqeNXnmXHjYKMi2WcYtezGEEhqUI/E2g==}
 
-  '@tanstack/table-core@8.21.2':
-    resolution: {integrity: sha512-uvXk/U4cBiFMxt+p9/G7yUWI/UbHYbyghLCjlpWZ3mLeIZiUBSKcUnw9UnKkdRz7Z/N4UBuFLWQdJCjUe7HjvA==}
-    engines: {node: '>=12'}
-
   '@tanstack/virtual-core@3.13.4':
     resolution: {integrity: sha512-fNGO9fjjSLns87tlcto106enQQLycCKR4DPNpgq3djP5IdcPFdPAmaKjsgzIeRhH7hWrELgW12hYnRthS5kLUw==}
-
-  '@tanstack/vue-table@8.21.2':
-    resolution: {integrity: sha512-KBgOWxha/x4m1EdhVWxOpqHb661UjqAxzPcmXR3QiA7aShZ547x19Gw0UJX9we+m+tVcPuLRZ61JsYW47QZFfQ==}
-    engines: {node: '>=12'}
-    peerDependencies:
-      vue: '>=3.2'
 
   '@tanstack/vue-virtual@3.13.4':
     resolution: {integrity: sha512-1fPrd3hE1SS4R/9JbX1AlzueY4duCK7ixuLcMW5GMnk9N6WbLo9MioNKiv22V+UaXKOLNy8tLdzT8NYerOFTOQ==}
@@ -1428,8 +1410,14 @@ packages:
   '@types/json-schema@7.0.15':
     resolution: {integrity: sha512-5+fP8P8MFNC+AyZCDxrB2pkZFPGzqQWUzpSeuuVLvm8VMcorNYavBqoFcxK8bQz4Qsbn4oUEEem4wDLfcysGHA==}
 
+  '@types/leaflet.markercluster@1.5.6':
+    resolution: {integrity: sha512-I7hZjO2+isVXGYWzKxBp8PsCzAYCJBc29qBdFpquOCkS7zFDqUsUvkEOyQHedsk/Cy5tocQzf+Ndorm5W9YKTQ==}
+
   '@types/leaflet@1.7.6':
     resolution: {integrity: sha512-Emkz3V08QnlelSbpT46OEAx+TBZYTOX2r1yM7W+hWg5+djHtQ1GbEXBDRLaqQDOYcDI51Ss0ayoqoKD4CtLUDA==}
+
+  '@types/leaflet@1.9.20':
+    resolution: {integrity: sha512-rooalPMlk61LCaLOvBF2VIf9M47HgMQqi5xQ9QRi7c8PkdIe0WrIi5IxXUXQjAdL0c+vcQ01mYWbthzmp9GHWw==}
 
   '@types/mapbox__point-geometry@0.1.4':
     resolution: {integrity: sha512-mUWlSxAmYLfwnRBmgYV86tgYmMIICX4kza8YnE/eIlywGe2XoOxlpVnXWwir92xRLjwyarqwpu2EJKD2pk0IUA==}
@@ -1647,13 +1635,13 @@ packages:
   '@unovis/graphlibrary@2.2.0-2':
     resolution: {integrity: sha512-HeEzpd/vDyWiIJt0rnh+2ICXUIuF2N0+Z9OJJiKg0DB+eFUcD+bk+9QPhYHwkFwfxdjDA9fHi1DZ/O/bbV58Nw==}
 
-  '@unovis/ts@1.5.1':
-    resolution: {integrity: sha512-cNCVZUz3RagftEOw+HDvbbGTkmtpDNSv1Mw7C4wBBeRKQGzztI5TVL18IWFbKo/0VD6zP/jv+GKwJXZTGl6w0w==}
+  '@unovis/ts@1.6.0':
+    resolution: {integrity: sha512-icPFHSPHD1AwmLFAu++S4CNN9vgsul4Y4IpYA9aJ9IXnaRLh7+t9WV+UujDsLB/MeSO1sK/lgRem1tWnS+HtMA==}
 
-  '@unovis/vue@1.5.1':
-    resolution: {integrity: sha512-JHpytN/usD4YzxVpSWTaqFMX667KjIYtjV/JK+iTAujn4a3xstAaySbZpP55qoANf9qEKUvM1EuRWs+qjqQGPQ==}
+  '@unovis/vue@1.6.0':
+    resolution: {integrity: sha512-aic+luFHeeE8aWEJIfmZNZX32UDNgeflc0jZQh7qkghUQuavlnFnNxpL5NyDdW0D8ZuV8PkrocyoOM67moS6aw==}
     peerDependencies:
-      '@unovis/ts': 1.5.1
+      '@unovis/ts': 1.6.0
       vue: ^3
 
   '@vee-validate/zod@4.15.0':
@@ -1789,9 +1777,6 @@ packages:
 
   '@vueuse/core@12.8.2':
     resolution: {integrity: sha512-HbvCmZdzAu3VGi/pWYm5Ut+Kd9mn1ZHnn4L5G8kOQTPs/IwIAmJoBrmYk2ckLArgMXZj0AW3n5CAejLUO+PhdQ==}
-
-  '@vueuse/math@12.8.2':
-    resolution: {integrity: sha512-hAhazPaKb4wlS/EXu11+dYaEaX60jvb+zil3uGR4he5yWLKAxcqGMhupuHAa0uIKcSK11GJMm0GdEA7mQYx2Aw==}
 
   '@vueuse/metadata@10.11.1':
     resolution: {integrity: sha512-IGa5FXd003Ug1qAZmyE8wF3sJ81xGLSqTqtQ6jaVfkeZ4i5kS2mwQF61yhVqojRnenVew5PldLyRgvdl4YYuSw==}
@@ -2592,21 +2577,8 @@ packages:
   electron-to-chromium@1.5.118:
     resolution: {integrity: sha512-yNDUus0iultYyVoEFLnQeei7LOQkL8wg8GQpkPCRrOlJXlcCwa6eGKZkxQ9ciHsqZyYbj8Jd94X1CTPzGm+uIA==}
 
-  elkjs@0.8.2:
-    resolution: {integrity: sha512-L6uRgvZTH+4OF5NE/MBbzQx/WYpru1xCBE9respNj6qznEewGUIfhzmm7horWWxbNO2M0WckQypGctR8lH79xQ==}
-
-  embla-carousel-reactive-utils@8.5.2:
-    resolution: {integrity: sha512-QC8/hYSK/pEmqEdU1IO5O+XNc/Ptmmq7uCB44vKplgLKhB/l0+yvYx0+Cv0sF6Ena8Srld5vUErZkT+yTahtDg==}
-    peerDependencies:
-      embla-carousel: 8.5.2
-
-  embla-carousel-vue@8.5.2:
-    resolution: {integrity: sha512-jPZKpst5auGJQ/GRs+UPc7KQGYd/zkwU+bA3m/SDCd4dsTpNScSmfBDWeB/SSUcc6G3z9GV+bOfyAJw1gZLUMA==}
-    peerDependencies:
-      vue: ^3.2.37
-
-  embla-carousel@8.5.2:
-    resolution: {integrity: sha512-xQ9oVLrun/eCG/7ru3R+I5bJ7shsD8fFwLEY7yPe27/+fDHCNj0OT5EoG5ZbFyOxOcG6yTwW8oTz/dWyFnyGpg==}
+  elkjs@0.10.0:
+    resolution: {integrity: sha512-v/3r+3Bl2NMrWmVoRTMBtHtWvRISTix/s9EfnsfEWApNrsmNjqgqJOispCGg46BPwIFdkag3N/HYSxJczvCm6w==}
 
   emoji-regex@8.0.0:
     resolution: {integrity: sha512-MSjYzcWNOA0ewAHpz0MxpYFvwg6yjy1NG3xteoqz644VCo/RPgnr1/GGt+ic3iJTzQ8Eu3TdM14SawnVUmGE6A==}
@@ -2849,9 +2821,6 @@ packages:
     peerDependenciesMeta:
       jiti:
         optional: true
-
-  esm-env@1.2.2:
-    resolution: {integrity: sha512-Epxrv+Nr/CaL4ZcFGPJIYLWFom+YeV1DqMLHJoEd9SYRxNbaFruBwfEX/kkHUJf55j2+TUbmDcmuilbP1TmXHA==}
 
   espree@10.3.0:
     resolution: {integrity: sha512-0QYC8b24HWY8zjRnDTL6RiHfDbAWn63qb4LMj1Z4b076A4une81+z03Kg7l7mn/48PUTqoLptSXez8oknU8Clg==}
@@ -3396,8 +3365,16 @@ packages:
     resolution: {integrity: sha512-b94GiNHQNy6JNTrt5w6zNyffMrNkXZb3KTkCZJb2V1xaEGCk093vkZ2jk3tpaeP33/OiXC+WvK9AxUebnf5nbw==}
     engines: {node: '>= 0.6.3'}
 
+  leaflet.markercluster@1.5.3:
+    resolution: {integrity: sha512-vPTw/Bndq7eQHjLBVlWpnGeLa3t+3zGiuM7fJwCkiMFq+nmRuG3RI3f7f4N4TDX7T4NpbAXpR2+NTRSEGfCSeA==}
+    peerDependencies:
+      leaflet: ^1.3.1
+
   leaflet@1.7.1:
     resolution: {integrity: sha512-/xwPEBidtg69Q3HlqPdU3DnrXQOvQU/CCHA1tcDQVzOwm91YMYaILjNp7L4Eaw5Z4sOYdbBz6koWyibppd8Zqw==}
+
+  leaflet@1.9.4:
+    resolution: {integrity: sha512-nxS1ynzJOmOlHp+iL3FyWqK89GtNL8U8rvlMOsQdTTssxZwCXh8N2NB3GDQOL+YR3XnWyZAxwQixURb+FA74PA==}
 
   levn@0.4.1:
     resolution: {integrity: sha512-+bT2uH4E5LGE7h/n3evcS/sQlJXCpIp6ym8OWJ5eV6+67Dsql/LaaT7qJBAt2rzfoa/5QBGBhxDix1dMt2kQKQ==}
@@ -3798,9 +3775,6 @@ packages:
 
   nth-check@2.1.1:
     resolution: {integrity: sha512-lqjrjmaOoAnWfMmBPL+XNnynZh2+swxiX3WUE0s4yEHI6m+AwrK2UZOimIRl3X/4QctVqS8AiZjFqyOGrMXb/w==}
-
-  number-flow@0.5.5:
-    resolution: {integrity: sha512-oE+gyA3S0ar8un2dg80TlEi3hjvi/UnTewHl2bu9dGKMxU7nT8VTUdIf1X7NbRLslqyyTyxdSmIAv/QJhaq1pw==}
 
   nuxt@3.16.2:
     resolution: {integrity: sha512-yjIC/C4HW8Pd+m0ACGliEF0HnimXYGYvUzjOsTiLQKkDDt2T+djyZ+pCl9BfhQBA8rYmnsym2jUI+ubjv1iClw==}
@@ -5896,12 +5870,6 @@ snapshots:
       '@nodelib/fs.scandir': 4.0.1
       fastq: 1.19.1
 
-  '@number-flow/vue@0.4.5(vue@3.5.13(typescript@5.8.2))':
-    dependencies:
-      esm-env: 1.2.2
-      number-flow: 0.5.5
-      vue: 3.5.13(typescript@5.8.2)
-
   '@nuxt/cli@3.24.0(magicast@0.3.5)':
     dependencies:
       c12: 3.0.2(magicast@0.3.5)
@@ -6518,14 +6486,7 @@ snapshots:
     dependencies:
       tslib: 2.8.1
 
-  '@tanstack/table-core@8.21.2': {}
-
   '@tanstack/virtual-core@3.13.4': {}
-
-  '@tanstack/vue-table@8.21.2(vue@3.5.13(typescript@5.8.2))':
-    dependencies:
-      '@tanstack/table-core': 8.21.2
-      vue: 3.5.13(typescript@5.8.2)
 
   '@tanstack/vue-virtual@3.13.4(vue@3.5.13(typescript@5.8.2))':
     dependencies:
@@ -6692,7 +6653,15 @@ snapshots:
 
   '@types/json-schema@7.0.15': {}
 
+  '@types/leaflet.markercluster@1.5.6':
+    dependencies:
+      '@types/leaflet': 1.9.20
+
   '@types/leaflet@1.7.6':
+    dependencies:
+      '@types/geojson': 7946.0.16
+
+  '@types/leaflet@1.9.20':
     dependencies:
       '@types/geojson': 7946.0.16
 
@@ -7052,7 +7021,7 @@ snapshots:
     dependencies:
       lodash-es: 4.17.21
 
-  '@unovis/ts@1.5.1':
+  '@unovis/ts@1.6.0':
     dependencies:
       '@emotion/css': 11.13.5
       '@juggle/resize-observer': 3.4.0
@@ -7075,7 +7044,7 @@ snapshots:
       d3-geo-projection: 4.0.0
       d3-interpolate-path: 2.3.0
       d3-sankey: 0.12.3
-      elkjs: 0.8.2
+      elkjs: 0.10.0
       geojson: 0.5.0
       leaflet: 1.7.1
       maplibre-gl: 2.4.0
@@ -7089,9 +7058,9 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@unovis/vue@1.5.1(@unovis/ts@1.5.1)(vue@3.5.13(typescript@5.8.2))':
+  '@unovis/vue@1.6.0(@unovis/ts@1.6.0)(vue@3.5.13(typescript@5.8.2))':
     dependencies:
-      '@unovis/ts': 1.5.1
+      '@unovis/ts': 1.6.0
       vue: 3.5.13(typescript@5.8.2)
 
   '@vee-validate/zod@4.15.0(vue@3.5.13(typescript@5.8.2))(zod@3.24.2)':
@@ -7313,13 +7282,6 @@ snapshots:
     dependencies:
       '@types/web-bluetooth': 0.0.21
       '@vueuse/metadata': 12.8.2
-      '@vueuse/shared': 12.8.2(typescript@5.8.2)
-      vue: 3.5.13(typescript@5.8.2)
-    transitivePeerDependencies:
-      - typescript
-
-  '@vueuse/math@12.8.2(typescript@5.8.2)':
-    dependencies:
       '@vueuse/shared': 12.8.2(typescript@5.8.2)
       vue: 3.5.13(typescript@5.8.2)
     transitivePeerDependencies:
@@ -8148,19 +8110,7 @@ snapshots:
 
   electron-to-chromium@1.5.118: {}
 
-  elkjs@0.8.2: {}
-
-  embla-carousel-reactive-utils@8.5.2(embla-carousel@8.5.2):
-    dependencies:
-      embla-carousel: 8.5.2
-
-  embla-carousel-vue@8.5.2(vue@3.5.13(typescript@5.8.2)):
-    dependencies:
-      embla-carousel: 8.5.2
-      embla-carousel-reactive-utils: 8.5.2(embla-carousel@8.5.2)
-      vue: 3.5.13(typescript@5.8.2)
-
-  embla-carousel@8.5.2: {}
+  elkjs@0.10.0: {}
 
   emoji-regex@8.0.0: {}
 
@@ -8515,8 +8465,6 @@ snapshots:
       jiti: 2.4.2
     transitivePeerDependencies:
       - supports-color
-
-  esm-env@1.2.2: {}
 
   espree@10.3.0:
     dependencies:
@@ -9009,7 +8957,13 @@ snapshots:
     dependencies:
       readable-stream: 2.3.8
 
+  leaflet.markercluster@1.5.3(leaflet@1.9.4):
+    dependencies:
+      leaflet: 1.9.4
+
   leaflet@1.7.1: {}
+
+  leaflet@1.9.4: {}
 
   levn@0.4.1:
     dependencies:
@@ -9654,10 +9608,6 @@ snapshots:
   nth-check@2.1.1:
     dependencies:
       boolbase: 1.0.0
-
-  number-flow@0.5.5:
-    dependencies:
-      esm-env: 1.2.2
 
   nuxt@3.16.2(@parcel/watcher@2.5.1)(@types/node@22.13.10)(db0@0.3.1)(eslint@9.22.0(jiti@2.4.2))(ioredis@5.6.0)(magicast@0.3.5)(optionator@0.9.4)(rollup@4.38.0)(terser@5.39.0)(tsx@4.19.3)(typescript@5.8.2)(vite@6.2.4(@types/node@22.13.10)(jiti@2.4.2)(terser@5.39.0)(tsx@4.19.3)(yaml@2.7.0))(vue-tsc@2.2.8(typescript@5.8.2))(yaml@2.7.0):
     dependencies:
