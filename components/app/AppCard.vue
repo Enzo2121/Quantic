@@ -10,7 +10,7 @@ defineProps<Props>()
 
 <template>
   <div class="group w-full">
-    <div class="rounded-lg border border-black/10 bg-[#FAFAFA] p-3 lg:p-5 min-h-40 transition-all duration-200 hover:shadow-md hover:-translate-y-1 w-full min-w-0 flex flex-col overflow-hidden">
+    <div class="rounded-lg border border-border bg-card p-3 lg:p-5 min-h-40 transition-all duration-200 hover:shadow-md hover:-translate-y-1 w-full min-w-0 flex flex-col overflow-hidden">
       <div class="flex items-center gap-3 mb-3 flex-shrink-0">
         <div class="flex gap-2">
           <Icon
@@ -21,11 +21,11 @@ defineProps<Props>()
       </div>
 
       <div class="flex-1 flex flex-col space-y-2 overflow-hidden">
-        <h3 class="font-medium font-geist text-xl lg:text-2xl text-black leading-tight line-clamp-2 flex-shrink-0">
+        <h3 class="font-medium font-geist text-xl lg:text-2xl text-card-foreground leading-tight line-clamp-2 flex-shrink-0">
           {{ title }}
         </h3>
 
-        <p class="font-normal font-geist text-sm lg:text-base text-black leading-relaxed line-clamp-3 flex-1 overflow-hidden">
+        <p class="font-normal font-geist text-sm lg:text-base text-muted-foreground leading-relaxed line-clamp-3 flex-1 overflow-hidden">
           {{ description }}
         </p>
       </div>

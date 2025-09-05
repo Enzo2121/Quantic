@@ -22,6 +22,8 @@ export default defineNuxtConfig({
 
   colorMode: {
     classSuffix: '',
+    preference: 'light', // Définir light comme mode par défaut
+    fallback: 'light', // Mode de secours si la préférence n'est pas définie
   },
 
   features: {
@@ -42,7 +44,7 @@ export default defineNuxtConfig({
   routeRules: {
     '/pointFrais': {
       ssr: true,
-      headers: { 'cache-control': 's-maxage=60' }
+      headers: { 'cache-control': 's-maxage=60' },
     },
   },
 

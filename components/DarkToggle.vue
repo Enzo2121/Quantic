@@ -6,7 +6,8 @@ const color = useColorMode()
   <DropdownMenu>
     <DropdownMenuTrigger as-child>
       <Button variant="ghost" size="icon" title="Toggle Color Scheme" aria-label="button dark toggle">
-        <div class="i-ph-sun-dim-duotone dark:i-ph-moon-stars-duotone" />
+        <Icon name="i-ph-sun-dim-duotone" class="h-4 w-4 dark:hidden" />
+        <Icon name="i-ph-moon-stars-duotone" class="h-4 w-4 hidden dark:block" />
       </Button>
     </DropdownMenuTrigger>
     <DropdownMenuContent>

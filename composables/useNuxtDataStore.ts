@@ -499,7 +499,6 @@ export function useNuxtDataStore<T extends BaseDataItem, F extends BaseFilters>(
 
   const stateData = reactive({
     data: computed(() => data.value),
-    filteredData: computed(() => data.value),
     filters,
     loading: computed(() => loading.value),
     error: computed(() => error.value?.message || null),
@@ -512,8 +511,12 @@ export function useNuxtDataStore<T extends BaseDataItem, F extends BaseFilters>(
     isLoaded: computed(() => isLoaded.value),
   })
 
+  // Computed séparé pour éviter les problèmes de proxy Pinia
+  const filteredData = computed(() => data.value)
+
   return {
     ...toRefs(stateData),
+    filteredData,
 
     data,
     currentPageData,

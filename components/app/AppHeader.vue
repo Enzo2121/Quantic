@@ -16,11 +16,11 @@ function navigateToPointFrais() {
 
         <div class="space-y-8">
 
-          <h1 class="font-medium leading-tight font-nexa text-2xl md:text-4xl lg:text-6xl text-gray-900">
+          <h1 class="font-medium leading-tight font-nexa text-2xl md:text-4xl lg:text-6xl text-foreground">
             SOS Paris <span class="bg-[#5F259F] text-white px-2 py-1 rounded">surchauffe</span> . Trouvez une zone fraîcheur en quelques clics
           </h1>
 
-          <p class="max-w-4xl font-normal leading-relaxed text-gray-400 text-xl">
+          <p class="max-w-4xl font-normal leading-relaxed text-muted-foreground text-xl">
             Découvrez les équipements sportifs, espaces verts et fontaines à boire de Paris.
             Restez au frais cet été grâce aux données Open Data.
           </p>
@@ -62,7 +62,7 @@ function navigateToPointFrais() {
       </div>
 
       <div class="absolute bottom-0 left-0 right-0">
-        <svg viewBox="0 0 1440 120" class="h-12 w-full fill-white">
+        <svg viewBox="0 0 1440 120" class="h-12 w-full fill-background">
           <path d="M0,32L48,37.3C96,43,192,53,288,58.7C384,64,480,64,576,58.7C672,53,768,43,864,48C960,53,1056,75,1152,80C1248,85,1344,75,1392,69.3L1440,64L1440,120L1392,120C1344,120,1248,120,1152,120C1056,120,960,120,864,120C768,120,672,120,576,120C480,120,384,120,288,120C192,120,96,120,48,120L0,120Z" />
         </svg>
       </div>

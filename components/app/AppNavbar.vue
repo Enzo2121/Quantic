@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import DarkToggle from '@/components/DarkToggle.vue'
 import { Button } from '@/components/ui/button'
 import {
   NavigationMenu,
@@ -68,26 +69,30 @@ watch(() => route.path, () => {
           </NavigationMenuList>
         </NavigationMenu>
 
-        <Button
-          as-child
-          variant="default"
-          size="default"
-          class="bg-[#5F259F] hover:bg-[#5F259F]/90 text-white ml-4 px-6 py-2 hidden lg:flex"
-        >
-          <NuxtLink to="/analytics" class="flex items-center gap-2">
-            <Icon name="i-lucide-github" class="h-4 w-4" />
-            <span class="hidden sm:inline">Repo Github</span>
-          </NuxtLink>
-        </Button>
+          <div class="flex items-center gap-2 ml-4">
+          <DarkToggle />
 
-        <Button
-          variant="ghost"
-          size="sm"
-          class="md:hidden ml-auto"
-          @click="toggleMobileMenu"
-        >
-          <Icon name="i-lucide-menu" class="h-4 w-4" />
-        </Button>
+          <Button
+            as-child
+            variant="default"
+            size="default"
+            class="bg-[#5F259F] hover:bg-[#5F259F]/90 text-white px-6 py-2 hidden lg:flex"
+          >
+            <NuxtLink to="/analytics" class="flex items-center gap-2">
+              <Icon name="i-lucide-github" class="h-4 w-4" />
+              <span class="hidden sm:inline">Repo Github</span>
+            </NuxtLink>
+          </Button>
+
+          <Button
+            variant="ghost"
+            size="sm"
+            class="md:hidden"
+            @click="toggleMobileMenu"
+          >
+            <Icon name="i-lucide-menu" class="h-4 w-4" />
+          </Button>
+        </div>
       </div>
     </div>
 
@@ -112,6 +117,11 @@ watch(() => route.path, () => {
               {{ item.name }}
             </NuxtLink>
 
+            <!-- Bouton Dark/Light Mode pour mobile -->
+            <div class="flex items-center justify-between px-3 py-2">
+              <span class="text-sm font-medium text-muted-foreground">Thème</span>
+              <DarkToggle />
+            </div>
           </nav>
         </div>
       </div>
