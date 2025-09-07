@@ -34,15 +34,6 @@ export function createUnifiedApiHandler<T extends ApiRecord, R>(config: UnifiedA
     const query = getQuery(event)
     const params = parseQueryParams(query)
 
-    console.warn(`[${config.name}] Processing request:`, {
-      page: params.page,
-      pageSize: params.pageSize,
-      search: params.search,
-      types: params.types.length,
-      categories: params.categories.length,
-      etats: params.etats.length,
-    })
-
     try {
       let allRecords: T[] = []
       let totalFromAPI = 0
@@ -68,11 +59,9 @@ export function createUnifiedApiHandler<T extends ApiRecord, R>(config: UnifiedA
         },
       }
 
-      console.warn(`[${config.name}] Returning ${transformedData.records.length} records out of ${transformedData.nhits} total`)
       return transformedData
     }
     catch (error) {
-      console.error(`[${config.name}] API Error:`, error)
       throw createError({
         statusCode: 500,
         statusMessage: `Erreur lors du chargement des ${config.name}`,

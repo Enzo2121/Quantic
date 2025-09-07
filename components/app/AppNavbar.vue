@@ -41,35 +41,35 @@ watch(() => route.path, () => {
 <template>
   <header class="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
     <div class="px-4 lg:px-6">
-      <div class="max-w-7xl mx-auto flex h-16 items-center">
-        <div class="flex items-center gap-2 flex-shrink-0">
+      <div class="max-w-7xl mx-auto grid grid-cols-3 h-16 items-center">
+        <div class="flex items-center gap-2 justify-start">
           <h1 class="font-nexa text-xl font-bold text-[#5F259F]">
             Quantic Factory
           </h1>
         </div>
 
-        <NavigationMenu class="hidden md:flex ml-auto">
-          <NavigationMenuList class="flex gap-1">
-            <NavigationMenuItem v-for="item in navItems" :key="item.name">
-              <NavigationMenuLink
-                as-child
-              >
-                <NuxtLink
-                  :to="item.href"
-                  class="group inline-flex h-10 w-max items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50"
-                  :class="isActiveRoute(item.href)
-                    ? 'bg-accent text-accent-foreground'
-                    : 'text-muted-foreground'"
-                >
-                  <Icon :name="item.icon" class="mr-2 h-4 w-4" />
-                  {{ item.name }}
-                </NuxtLink>
-              </NavigationMenuLink>
-            </NavigationMenuItem>
-          </NavigationMenuList>
-        </NavigationMenu>
+        <div class="flex justify-center">
+          <NavigationMenu class="hidden md:flex">
+            <NavigationMenuList class="flex gap-1">
+              <NavigationMenuItem v-for="item in navItems" :key="item.name">
+                <NavigationMenuLink as-child>
+                  <NuxtLink
+                    :to="item.href"
+                    class="group inline-flex h-10 w-max items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50"
+                    :class="isActiveRoute(item.href)
+                      ? 'bg-accent text-accent-foreground'
+                      : 'text-muted-foreground'"
+                  >
+                    <Icon :name="item.icon" class="mr-2 h-4 w-4" />
+                    {{ item.name }}
+                  </NuxtLink>
+                </NavigationMenuLink>
+              </NavigationMenuItem>
+            </NavigationMenuList>
+          </NavigationMenu>
+        </div>
 
-          <div class="flex items-center gap-2 ml-4">
+        <div class="flex items-center gap-2 justify-end">
           <DarkToggle />
 
           <Button

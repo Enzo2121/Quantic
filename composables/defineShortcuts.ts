@@ -115,13 +115,11 @@ export function defineShortcuts(config: ShortcutsConfig, options: ShortcutsOptio
     let shortcut: Partial<Shortcut>
 
     if (key.includes('-') && key !== '-' && !key.match(chainedShortcutRegex)?.length) {
-      // eslint-disable-next-line no-console
-      console.trace(`[Shortcut] Invalid key: "${key}"`)
+      // Invalid key format - silently ignore
     }
 
     if (key.includes('_') && key !== '_' && !key.match(combinedShortcutRegex)?.length) {
-      // eslint-disable-next-line no-console
-      console.trace(`[Shortcut] Invalid key: "${key}"`)
+      // Invalid key format - silently ignore
     }
 
     const chained = key.includes('-') && key !== '-'
@@ -161,8 +159,7 @@ export function defineShortcuts(config: ShortcutsConfig, options: ShortcutsOptio
     }
 
     if (!shortcut.handler) {
-      // eslint-disable-next-line no-console
-      console.trace('[Shortcut] Invalid value')
+      // Invalid value - silently ignore
       return null
     }
 

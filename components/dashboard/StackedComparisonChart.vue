@@ -24,7 +24,6 @@ const props = withDefaults(defineProps<Props>(), {
   maxItems: 10,
 })
 
-// Transformer les données pour BarChart
 const chartData = computed(() => {
   return props.data
     .slice(0, props.maxItems)
@@ -36,7 +35,6 @@ const chartData = computed(() => {
     }))
 })
 
-// Configuration pour le graphique empilé
 const categories = ['equipements', 'espaces', 'fontaines']
 const colors = ['#5f259f', '#22c55e', '#3b82f6']
 </script>

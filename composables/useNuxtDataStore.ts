@@ -27,7 +27,7 @@ export interface LazyLoadingConfig {
 export interface NuxtDataStoreConfig<_T extends BaseDataItem, F extends BaseFilters> {
   endpoint: string
   defaultFilters: F
-  filterFields: (keyof F)[]
+  filterFields: (keyof F)[] 
   storeKey: string
   lazyLoading?: Partial<LazyLoadingConfig>
 }
@@ -110,13 +110,9 @@ export function useNuxtDataStore<T extends BaseDataItem, F extends BaseFilters>(
 
   const data = computed<T[]>(() => {
     if (!apiResponse.value?.records) {
-      console.warn(`[${config.storeKey}] No records in API response`)
       return []
     }
-
-    console.warn(`[${config.storeKey}] Processing ${apiResponse.value.records.length} records`)
     
-    // Déduplication robuste basée sur l'ID et les propriétés clés
     const uniqueRecords = new Map<string, T>()
     
     apiResponse.value.records.forEach((record) => {
@@ -129,7 +125,6 @@ export function useNuxtDataStore<T extends BaseDataItem, F extends BaseFilters>(
     const sorted = Array.from(uniqueRecords.values())
 
     if (sortBy.value) {
-      console.warn(`[${config.storeKey}] Sorting by ${sortBy.value} (${sortOrder.value})`)
       sorted.sort((a, b) => {
         const aVal = (a as any)[sortBy.value!]
         const bVal = (b as any)[sortBy.value!]
@@ -154,20 +149,15 @@ export function useNuxtDataStore<T extends BaseDataItem, F extends BaseFilters>(
       })
     }
 
-    console.warn(`[${config.storeKey}] Final data: ${sorted.length} unique records from ${apiResponse.value.records.length} total`)
     return sorted
   })
 
-  // Pagination côté client pour éviter les doublons
   const currentPageData = computed(() => {
     const allData = data.value
     const startIndex = (pagination.value.page - 1) * pagination.value.pageSize
     const endIndex = startIndex + pagination.value.pageSize
     
-    const paginatedData = allData.slice(startIndex, endIndex)
-    console.warn(`[${config.storeKey}] Paginating: ${startIndex}-${endIndex} from ${allData.length} total records`)
-    
-    return paginatedData
+    return allData.slice(startIndex, endIndex)
   })
 
   async function loadAllDataForOptions() {
@@ -176,7 +166,6 @@ export function useNuxtDataStore<T extends BaseDataItem, F extends BaseFilters>(
     }
 
     isLoadingOptions.value = true
-    console.warn(`[${config.storeKey}] Loading all data for filter options...`)
 
     try {
       const allData = await $fetch<{ records: T[], nhits: number }>(config.endpoint, {
@@ -188,15 +177,11 @@ export function useNuxtDataStore<T extends BaseDataItem, F extends BaseFilters>(
 
       allDataForOptions.value = allData.records || []
       optionsLoaded.value = true
-
-      console.warn(`[${config.storeKey}] Loaded ${allDataForOptions.value.length} records for options`)
     }
     catch (error) {
-      console.error(`[${config.storeKey}] Error loading options data:`, error)
       if (data.value.length > 0) {
         allDataForOptions.value = data.value
         optionsLoaded.value = true
-        console.warn(`[${config.storeKey}] Using current data as fallback for options`)
       }
     }
     finally {
@@ -216,7 +201,6 @@ export function useNuxtDataStore<T extends BaseDataItem, F extends BaseFilters>(
 
   const filterOptions = computed(() => {
     const dataSource = optionsLoaded.value ? allDataForOptions.value : data.value
-    console.warn(`[${config.storeKey}] Calculating filterOptions from ${dataSource.length} records (${optionsLoaded.value ? 'complete' : 'partial'} data)`)
 
     const options: Record<string, SelectOption[]> = {}
 
@@ -277,10 +261,8 @@ export function useNuxtDataStore<T extends BaseDataItem, F extends BaseFilters>(
         .sort((a, b) => a.label.localeCompare(b.label))
 
       options[field as string] = fieldOptions
-      console.warn(`[${config.storeKey}] Field ${String(field)}: ${fieldOptions.length} options`)
     })
 
-    console.warn(`[${config.storeKey}] FilterOptions calculated:`, Object.keys(options))
     return options
   })
 
@@ -346,12 +328,10 @@ export function useNuxtDataStore<T extends BaseDataItem, F extends BaseFilters>(
   }
 
   async function updateFilters(newFilters: Partial<F>) {
-    console.warn(`[${config.storeKey}] Updating filters:`, newFilters)
     filters.value = { ...filters.value, ...newFilters }
     pagination.value.page = 1
 
     if (shouldLoadMoreForFilters(filters.value)) {
-      console.warn(`[${config.storeKey}] Specific filter applied, loading more data for better results`)
       await loadMoreData('medium')
     }
 
@@ -389,27 +369,29 @@ export function useNuxtDataStore<T extends BaseDataItem, F extends BaseFilters>(
     }
 
     if (loadingMode.value === 'full') {
-      console.warn(`[${config.storeKey}] Already have full data, no need to load ${mode}`)
       return
     }
 
     if (loadingMode.value === mode) {
-      console.warn(`[${config.storeKey}] Already in ${mode} mode, no need to reload`)
       return
     }
 
     const newPageSize = mode === 'medium' ? lazyConfig.mediumLoadSize : lazyConfig.fullLoadSize
 
-    console.warn(`[${config.storeKey}] Loading more data: ${mode} mode (${newPageSize} items)`)
-
     isLoadingMore.value = true
     loadingMode.value = mode
-    pagination.value.pageSize = newPageSize
-    pagination.value.page = 1
 
     try {
+      // Mettre à jour la taille de page et rafraîchir
+      pagination.value.pageSize = newPageSize
+      pagination.value.page = 1
+      
       await refresh()
+      
       hasLoadedMore.value = true
+    }
+    catch (error) {
+      // Production: silent error handling
     }
     finally {
       isLoadingMore.value = false
@@ -454,11 +436,9 @@ export function useNuxtDataStore<T extends BaseDataItem, F extends BaseFilters>(
     const loadedPercentage = (data.value.length / totalItems.value) * 100
 
     if (loadedPercentage < 30 && loadingMode.value === 'initial' && !isLoadingMore.value) {
-      console.warn(`[${config.storeKey}] Auto-loading more data due to very limited results (${loadedPercentage.toFixed(1)}% loaded)`)
       loadMoreData('medium')
     }
     else if (loadedPercentage < 60 && loadingMode.value === 'medium' && !isLoadingMore.value && hasLoadedMore.value) {
-      console.warn(`[${config.storeKey}] Auto-loading full data for better filter results (${loadedPercentage.toFixed(1)}% loaded)`)
       loadMoreData('full')
     }
   }

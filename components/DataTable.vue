@@ -2,34 +2,70 @@
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Table, TableBody, TableCell, TableEmpty, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-
-interface Props {
-  data: T[]
-  loading?: boolean
-  pagination?: {
-    page: number
-    pageSize: number
-    total: number
-  }
-  sortBy?: string | null
-  sortOrder?: 'asc' | 'desc'
-  columns: string[]
-  getCellValue?: (item: T, column: string) => any
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  loading: false,
-  sortBy: null,
-  sortOrder: 'asc'
-})
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
 const emit = defineEmits<{
   'update:page': [page: number]
   'update:pageSize': [pageSize: number]
   'update:sort': [sortBy: string, sortOrder: 'asc' | 'desc']
-  'open-map-modal': [item: T]
+  'openMapModal': [item: T]
 }>()
+
+const props = withDefaults(defineProps<{
+  items?: any[]
+  columns: string[]
+  type?: 'equipements' | 'espaces-verts' | 'fontaines'
+  loading?: boolean
+  data?: any[]
+  pagination?: {
+    page: number
+    pageSize: number
+    total: number
+  } | null
+  sortBy?: string | null
+  sortOrder?: 'asc' | 'desc'
+  getCellValue?: (item: any, column: string) => any
+}>(), {
+  items: () => [],
+  loading: false,
+  data: () => [],
+  pagination: null,
+  sortBy: null,
+  sortOrder: 'asc',
+  type: 'equipements',
+  getCellValue: undefined,
+})
+
+const {
+  getEquipementCellValue,
+  getEspaceVertCellValue,
+  getFontaineCellValue,
+} = useDashboardUtils()
+
+function getCellValueInternal(item: any, column: string) {
+  if (props.getCellValue) {
+    return props.getCellValue(item, column)
+  }
+  
+  switch (props.type) {
+    case 'equipements':
+      return getEquipementCellValue(item, column)
+    case 'espaces-verts':
+      return getEspaceVertCellValue(item, column)
+    case 'fontaines':
+      return getFontaineCellValue(item, column)
+    default:
+      return item[column] || '-'
+  }
+}
+
+function handleViewDetails(item: any) {
+  emit('openMapModal', item)
+}
+
+function handleOpenItinerary(_item: any) {
+  // Implementation for opening itinerary
+}
 
 function handleSort(column: string) {
   const newOrder = props.sortBy === column && props.sortOrder === 'asc' ? 'desc' : 'asc'
@@ -37,34 +73,10 @@ function handleSort(column: string) {
 }
 
 function getSortIcon(column: string) {
-  if (props.sortBy !== column) return 'i-lucide-chevrons-up-down'
-  return props.sortOrder === 'asc' ? 'i-lucide-chevron-up' : 'i-lucide-chevron-down'
-}
-
-function viewDetails(item: T) {
-  console.log('Voir détails:', item)
-  // Ouvrir la modal de carte avec le point sélectionné
-  emit('open-map-modal', item)
-}
-
-
-function openDirections(item: T) {
-  console.log('Ouvrir itinéraire:', item)
-  // Ouvrir Google Maps avec l'itinéraire vers le lieu
-  const lat = (item as any).latitude
-  const lng = (item as any).longitude
-  const address = (item as any).adresse || (item as any).nom
-
-  if (lat && lng) {
-    // Utiliser les coordonnées pour l'itinéraire
-    const url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`
-    window.open(url, '_blank')
-  } else if (address) {
-    // Utiliser l'adresse pour l'itinéraire
-    const encodedAddress = encodeURIComponent(`${address}, Paris, France`)
-    const url = `https://www.google.com/maps/dir/?api=1&destination=${encodedAddress}`
-    window.open(url, '_blank')
+  if (props.sortBy !== column) {
+    return 'i-lucide-chevrons-up-down'
   }
+  return props.sortOrder === 'asc' ? 'i-lucide-chevron-up' : 'i-lucide-chevron-down'
 }
 
 const pageSizeOptions = [10, 20, 50, 100]
@@ -73,21 +85,23 @@ const pageSizeOptions = [10, 20, 50, 100]
 <template>
   <div class="space-y-4">
     <!-- Tableau -->
-    <div class="rounded-md border">
+    <div class="border rounded-md">
       <Table>
         <TableHeader>
           <TableRow>
             <TableHead v-for="column in columns" :key="column">
               <Button
                 variant="ghost"
+                class="h-8 justify-start px-2 font-medium lg:px-3"
                 @click="handleSort(column)"
-                class="h-8 px-2 lg:px-3 font-medium justify-start"
               >
                 {{ column.charAt(0).toUpperCase() + column.slice(1) }}
                 <Icon :name="getSortIcon(column)" class="ml-2 h-4 w-4" />
               </Button>
             </TableHead>
-            <TableHead class="w-[100px]">Actions</TableHead>
+            <TableHead class="w-[100px]">
+              Actions
+            </TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -98,12 +112,12 @@ const pageSizeOptions = [10, 20, 50, 100]
               </TableCell>
             </TableRow>
           </template>
-          <template v-else-if="data.length">
+          <template v-else-if="data && data.length">
             <TableRow v-for="item in data" :key="item.id || Math.random()">
               <TableCell v-for="column in columns" :key="column">
-                <div v-if="getCellValue" class="font-medium">
-                  <span v-if="column === 'horaires' || column === 'ouvert_24h' || column === 'canicule_ouverture'" v-html="getCellValue(item, column) || '-'"></span>
-                  <span v-else>{{ getCellValue(item, column) || '-' }}</span>
+                <div v-if="getCellValueInternal" class="font-medium">
+                  <span v-if="column === 'horaires' || column === 'ouvert_24h' || column === 'canicule_ouverture'" v-html="getCellValueInternal(item, column) || '-'" />
+                  <span v-else>{{ getCellValueInternal(item, column) || '-' }}</span>
                 </div>
                 <div v-else class="font-medium">
                   {{ item[column] || '-' }}
@@ -114,16 +128,16 @@ const pageSizeOptions = [10, 20, 50, 100]
                   <Button
                     variant="ghost"
                     size="sm"
-                    @click="viewDetails(item)"
                     title="Voir sur la carte"
+                    @click="handleViewDetails(item)"
                   >
                     <Icon name="i-lucide-eye" class="h-4 w-4" />
                   </Button>
                   <Button
                     variant="ghost"
                     size="sm"
-                    @click="openDirections(item)"
                     title="Obtenir l'itinéraire"
+                    @click="handleOpenItinerary(item)"
                   >
                     <Icon name="i-lucide-map-pin" class="h-4 w-4" />
                   </Button>
@@ -133,10 +147,14 @@ const pageSizeOptions = [10, 20, 50, 100]
           </template>
           <TableRow v-else>
             <TableCell :colspan="columns.length + 1">
-              <div class="text-center py-8">
-                <Icon name="i-lucide-search-x" class="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-                <p class="text-lg font-medium">Aucun résultat trouvé</p>
-                <p class="text-muted-foreground">Essayez de modifier vos filtres</p>
+              <div class="py-8 text-center">
+                <Icon name="i-lucide-search-x" class="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
+                <p class="text-lg font-medium">
+                  Aucun résultat trouvé
+                </p>
+                <p class="text-muted-foreground">
+                  Essayez de modifier vos filtres
+                </p>
               </div>
             </TableCell>
           </TableRow>

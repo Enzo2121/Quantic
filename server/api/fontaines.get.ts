@@ -2,7 +2,6 @@ import { createUnifiedApiHandler } from '../utils/unified-api-generator'
 import { formatArrondissement, convertDisplayToApiFormat, buildApiParams } from '../utils/api-utils'
 import type { ApiRecord, ApiResponse } from '../utils/api-utils'
 
-// === TYPES SPECIFIQUES ===
 interface FontaineRecord extends ApiRecord {
   fields: {
     voie: string
@@ -89,7 +88,6 @@ async function fetchFontainesForEtat(
   return await $fetch(`https://parisdata.opendatasoft.com/api/records/1.0/search/?${params}`)
 }
 
-// === CONFIGURATION UNIFIEE ===
 export default createUnifiedApiHandler<FontaineRecord, FontaineResult>({
   name: 'fontaines',
   baseUrl: 'https://parisdata.opendatasoft.com/api/records/1.0/search/',

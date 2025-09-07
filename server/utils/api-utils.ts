@@ -177,15 +177,11 @@ export async function executeMultipleQueries<T extends ApiRecord>(
   queries: Array<() => Promise<ApiResponse<T>>>,
   logPrefix: string,
 ): Promise<{ allRecords: T[], totalFromAPI: number }> {
-  console.warn(`[${logPrefix}] Executing ${queries.length} parallel queries`)
-
   const results = await Promise.all(queries.map(query => query()))
 
   const allFetchedRecords = results.flatMap(result => result.records)
   const allRecords = removeDuplicates(allFetchedRecords)
   const totalFromAPI = allRecords.length
-
-  console.warn(`[${logPrefix}] Merged ${allFetchedRecords.length} records into ${allRecords.length} unique records`)
 
   return { allRecords, totalFromAPI }
 }

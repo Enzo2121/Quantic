@@ -2,6 +2,7 @@ export function useDashboardStores() {
   const equipementsStore = useEquipementsSportifsStore()
   const espacesVertsStore = useEspacesVertsStore()
   const fontainesStore = useFontainesStore()
+  
   const aggregatedStats = computed(() => {
     if (!equipementsStore.isLoaded && !espacesVertsStore.isLoaded && !fontainesStore.isLoaded) {
       return null
@@ -17,6 +18,7 @@ export function useDashboardStores() {
       },
     }
   })
+  
   const stats = computed(() => ({
     equipements: {
       total: equipementsStore.pagination.total || 0,
@@ -31,6 +33,7 @@ export function useDashboardStores() {
       isLoaded: fontainesStore.isLoaded,
     },
   }))
+  
   const loadAllDataForStore = async (store: any) => {
     try {
       await store.fetchPage(1)
@@ -43,9 +46,10 @@ export function useDashboardStores() {
       }
       await Promise.all(pagePromises)
     } catch (error) {
-      console.error('Error loading all data for store:', error)
+      // Silently handle errors
     }
   }
+  
   const initializeStores = async () => {
     try {
       const promises = []
@@ -60,9 +64,10 @@ export function useDashboardStores() {
       }
       await Promise.all(promises)
     } catch (error) {
-      console.error('Erreur lors de l\'initialisation des stores:', error)
+      // Silently handle errors
     }
   }
+  
   const loadStoreData = async (storeType: 'equipements' | 'espaces-verts' | 'fontaines') => {
     try {
       switch (storeType) {
@@ -83,9 +88,10 @@ export function useDashboardStores() {
           break
       }
     } catch (error) {
-      console.error(`Erreur lors du chargement des ${storeType}:`, error)
+      // Silently handle errors
     }
   }
+  
   return {
     equipementsStore,
     espacesVertsStore,

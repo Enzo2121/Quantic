@@ -1,17 +1,14 @@
-import { nextTick, onMounted, ref, computed } from 'vue'
+import { nextTick, onMounted, ref, computed, readonly } from 'vue'
 
-// Couleurs prédéfinies pour les graphiques
 export const CHART_COLORS = [
   '#5f259f', '#3b82f6', '#22c55e', '#f59e0b', '#ef4444', 
   '#8b5cf6', '#06b6d4', '#10b981', '#f97316', '#84cc16'
 ] as const
 
-// Interface pour les données de graphique
 export interface ChartDataItem {
-  [key: string]: string | number
+  [key: string]: any
 }
 
-// Hook optimisé pour les graphiques
 export function useChart<T extends ChartDataItem>(options: {
   colors?: string[]
   maxItems?: number
@@ -28,11 +25,9 @@ export function useChart<T extends ChartDataItem>(options: {
   const chartContainer = ref<HTMLElement>()
   const isChartReady = ref(false)
 
-  // Fonction de tri et limitation des données
   function processChartData<T extends ChartDataItem>(data: T[]): T[] {
     let processedData = [...data]
 
-    // Tri si spécifié
     if (sortBy) {
       processedData.sort((a, b) => {
         const aValue = a[sortBy]
@@ -50,11 +45,9 @@ export function useChart<T extends ChartDataItem>(options: {
       })
     }
 
-    // Limitation du nombre d'éléments
     return processedData.slice(0, maxItems)
   }
 
-  // Génération des couleurs pour les données
   function generateColors(dataLength: number): string[] {
     const result: string[] = []
     for (let i = 0; i < dataLength; i++) {
@@ -63,7 +56,6 @@ export function useChart<T extends ChartDataItem>(options: {
     return result
   }
 
-  // Configuration optimisée pour les graphiques donut
   function createDonutConfig(data: T[], valueKey: keyof T, labelKey: keyof T) {
     const processedData = processChartData(data)
     const chartColors = generateColors(processedData.length)
@@ -90,7 +82,6 @@ export function useChart<T extends ChartDataItem>(options: {
     }
   }
 
-  // Configuration pour les graphiques en barres
   function createBarConfig(data: T[], valueKey: keyof T, labelKey: keyof T) {
     const processedData = processChartData(data)
     const chartColors = generateColors(processedData.length)
@@ -108,24 +99,21 @@ export function useChart<T extends ChartDataItem>(options: {
     }
   }
 
-  // Initialisation du graphique avec gestion d'erreurs
   async function initializeChart(callback?: () => void) {
     try {
       await nextTick()
       
       if (!chartContainer.value) {
-        console.warn('Chart container not found')
         return
       }
 
       isChartReady.value = true
       callback?.()
     } catch (error) {
-      console.error('Erreur lors de l\'initialisation du graphique:', error)
+      // Silently handle errors
     }
   }
 
-  // Mise à jour des couleurs (remplace forceBarColors)
   function updateChartColors(customColors?: string[]) {
     if (!chartContainer.value || !isChartReady.value) return
 
@@ -137,16 +125,14 @@ export function useChart<T extends ChartDataItem>(options: {
         const htmlElement = element as HTMLElement
         const color = colorsToUse[index % colorsToUse.length]
         
-        // Méthode plus robuste que la manipulation directe
         htmlElement.style.setProperty('--chart-color', color)
         htmlElement.setAttribute('data-color', color)
       })
     } catch (error) {
-      console.error('Erreur lors de la mise à jour des couleurs:', error)
+      // Silently handle errors
     }
   }
 
-  // Calcul des métriques pour les tooltips
   const chartMetrics = computed(() => ({
     isReady: isChartReady.value,
     hasContainer: !!chartContainer.value,
@@ -158,11 +144,9 @@ export function useChart<T extends ChartDataItem>(options: {
   })
 
   return {
-    // Refs
     chartContainer,
     isChartReady: readonly(isChartReady),
     
-    // Fonctions utilitaires
     processChartData,
     generateColors,
     createDonutConfig,
@@ -170,10 +154,8 @@ export function useChart<T extends ChartDataItem>(options: {
     initializeChart,
     updateChartColors,
     
-    // État
     chartMetrics: readonly(chartMetrics),
     
-    // Constantes
     CHART_COLORS,
   }
 }

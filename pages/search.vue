@@ -30,6 +30,11 @@ onMounted(async () => {
   }
 })
 
+// Méthode pour rafraîchir les données
+async function refreshData() {
+  await unifiedStore.loadAllData()
+}
+
 // Gestionnaires d'événements
 async function handleFiltersUpdate(newFilters: any) {
   await unifiedStore.updateFilters(newFilters)
@@ -282,7 +287,7 @@ const quickStats = computed(() => {
                 @update:page="handlePageChange"
                 @update:page-size="handlePageSizeChange"
                 @update:sort="handleSort"
-                @open-map-modal="handleOpenMapModal"
+                @openMapModal="handleOpenMapModal"
               >
                 <template #cell-source="{ value, item }">
                   <Badge :class="getSourceColor(item.source)">

@@ -57,11 +57,6 @@ function getColorsForCategory(category: string): string[] {
   
   return ['#22c55e', '#3b82f6', '#f59e0b', '#6b7280', '#ef4444']
 }
-
-watchEffect(() => {
-  console.log('Analytics Debug:', debugData.value)
-  console.log('Horaire Data:', horaireData.value)
-})
 </script>
 
 <template>

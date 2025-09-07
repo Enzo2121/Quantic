@@ -74,7 +74,7 @@ onMounted(async () => {
     await initializeStores()
   }
   catch (error) {
-    console.error('Erreur lors de l\'initialisation:', error)
+    // Silently handle initialization errors
   }
 })
 
@@ -373,7 +373,7 @@ function handleFontainesReset() {
                 @update:page="handleEquipementsPage"
                 @update:page-size="handleEquipementsPageSize"
                 @update:sort="handleEquipementsSort"
-                @open-map-modal="handleOpenMapModal"
+                @openMapModal="handleOpenMapModal"
               />
             </LoadingState>
           </CardContent>
@@ -432,7 +432,7 @@ function handleFontainesReset() {
                 @update:page="handleEspacesVertsPage"
                 @update:page-size="handleEspacesVertsPageSize"
                 @update:sort="handleEspacesVertsSort"
-                @open-map-modal="handleOpenMapModal"
+                @openMapModal="handleOpenMapModal"
               />
             </LoadingState>
           </CardContent>
@@ -487,7 +487,7 @@ function handleFontainesReset() {
                 @update:page="handleFontainesPage"
                 @update:page-size="handleFontainesPageSize"
                 @update:sort="handleFontainesSort"
-                @open-map-modal="handleOpenMapModal"
+                @openMapModal="handleOpenMapModal"
               />
             </LoadingState>
           </CardContent>

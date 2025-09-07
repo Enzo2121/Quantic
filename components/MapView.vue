@@ -55,7 +55,7 @@ onUnmounted(() => {
 
     mapInstance.value.remove()
   } catch (error) {
-    console.error('Erreur lors du nettoyage de la carte:', error)
+    // Silently handle cleanup errors
   }
 
   mapInstance.value = null
@@ -81,12 +81,10 @@ watch(() => props.zoom, (newZoom) => {
 
 async function initializeMap() {
   if (!isClient || !mapContainer.value) {
-    console.warn('Client non détecté ou conteneur de carte non trouvé')
     return
   }
 
   if (mapInstance.value) {
-    console.warn('Carte déjà initialisée, skipping')
     return
   }
 
@@ -98,12 +96,6 @@ async function initializeMap() {
       iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png',
       iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png',
       shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
-    })
-
-    console.log('Initialisation de la carte avec:', {
-      center: props.center,
-      zoom: props.zoom,
-      container: mapContainer.value
     })
 
     mapInstance.value = L.map(mapContainer.value, {
@@ -119,11 +111,7 @@ async function initializeMap() {
     const tileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '© OpenStreetMap contributors',
       maxZoom: 19,
-      errorTileUrl: 'data:image/png;base64,iVBORw0KGgoAAAANNSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==' // Transparent fallback
-    })
-
-    tileLayer.on('tileerror', (e) => {
-      console.warn('Erreur chargement tuile:', e)
+      errorTileUrl: 'data:image/png;base64,iVBORw0KGgoAAAANNSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=='
     })
 
     tileLayer.addTo(mapInstance.value)
@@ -140,14 +128,12 @@ async function initializeMap() {
       mapInstance.value?.invalidateSize()
     }, 100)
 
-    console.log('Carte initialisée avec succès')
   } catch (error) {
-    console.error('Erreur lors de l\'initialisation de la carte:', error)
+    // Silently handle initialization errors
   }
 }
 
 function handleResize() {
-  console.log('📏 Carte redimensionnée')
   setTimeout(() => {
     mapInstance.value?.invalidateSize()
   }, 50)
@@ -157,9 +143,6 @@ function handleZoomChange() {
   if (!mapInstance.value) return
 
   const currentZoom = mapInstance.value.getZoom()
-  const currentCenter = mapInstance.value.getCenter()
-
-  console.log('Zoom changé:', currentZoom, 'Centre:', [currentCenter.lat, currentCenter.lng])
 
   optimizeMarkersForZoom(currentZoom)
 
@@ -180,23 +163,18 @@ function optimizeMarkersForZoom(zoom: number) {
 
     if (zoom <= 10) {
       container.style.setProperty('--marker-opacity', '0.6')
-      console.log('Zoom faible détecté - optimisation activée')
     } else if (zoom >= 15) {
       container.style.setProperty('--marker-opacity', '1')
-      console.log('Zoom élevé détecté - qualité maximale')
     } else {
       container.style.setProperty('--marker-opacity', '0.8')
     }
   } catch (error) {
-    console.warn('Erreur lors de l\'optimisation des marqueurs:', error)
+    // Silently handle optimization errors
   }
 }
 
 function handleMoveChange() {
-  if (!mapInstance.value) return
-
-  const currentCenter = mapInstance.value.getCenter()
-  console.log('Centre changé:', [currentCenter.lat, currentCenter.lng])
+  // Remove console.log for move changes
 }
 
 function refreshMarkersIfNeeded() {
@@ -217,32 +195,24 @@ function refreshMarkersIfNeeded() {
           }
         }
       } catch (error) {
-        console.warn('Erreur lors de la vérification d\'un marqueur:', error)
+        // Silently handle marker verification errors
       }
     })
-
-    console.log(`Marqueurs valides: ${markersWithValidPosition}/${markers.value.length}`)
-    console.log(`Marqueurs dans les bounds: ${markersInBounds}/${markersWithValidPosition}`)
 
     const visibilityRatio = markersWithValidPosition > 0 ? markersInBounds / markersWithValidPosition : 0
 
     if (visibilityRatio < 0.1 && markers.value.length > 0) {
-      console.warn('Peu de marqueurs visibles, forçage du rafraîchissement')
       forceRefreshMarkers()
     } else if (markersWithValidPosition < markers.value.length * 0.8) {
-      console.warn('Plusieurs marqueurs invalides détectés')
       forceRefreshMarkers()
     }
   } catch (error) {
-    console.error('Erreur lors de la vérification des marqueurs:', error)
     forceRefreshMarkers()
   }
 }
 
 function forceRefreshMarkers() {
   if (!mapInstance.value) return
-
-  console.log('Forçage du rafraîchissement des marqueurs')
 
   const currentItems = props.items
 
@@ -263,7 +233,6 @@ function forceRefreshMarkers() {
 
 function diagnoseMarkerIssues() {
   if (!mapInstance.value) {
-    console.warn('Aucune instance de carte')
     return
   }
 
@@ -271,26 +240,20 @@ function diagnoseMarkerIssues() {
   const mapCenter = mapInstance.value.getCenter()
   const mapZoom = mapInstance.value.getZoom()
 
-  console.group('Diagnostic des marqueurs')
-  console.log('État de la carte:')
-  console.log('  - Centre:', [mapCenter.lat, mapCenter.lng])
-  console.log('  - Zoom:', mapZoom)
-  console.log('  - Bounds:', mapBounds.toBBoxString())
-  console.log('  - Nombre de marqueurs:', markers.value.length)
+  // Diagnostic information available for debugging but not logged
+  const diagnosticData = {
+    center: [mapCenter.lat, mapCenter.lng],
+    zoom: mapZoom,
+    bounds: mapBounds.toBBoxString(),
+    markersCount: markers.value.length,
+    markersDetails: markers.value.map((marker, index) => {
+      const pos = marker.getLatLng()
+      const inBounds = mapBounds.contains(pos)
+      return { index: index + 1, position: [pos.lat, pos.lng], inBounds }
+    })
+  }
 
-  console.log('Analyse des marqueurs:')
-  markers.value.forEach((marker, index) => {
-    const pos = marker.getLatLng()
-    const inBounds = mapBounds.contains(pos)
-    console.log(`  ${index + 1}. Position: [${pos.lat}, ${pos.lng}] - Dans bounds: ${inBounds}`)
-  })
-
-  console.log('État des calques:')
-  mapInstance.value.eachLayer((layer) => {
-    console.log('  - Layer:', layer.constructor.name)
-  })
-
-  console.groupEnd()
+  return diagnosticData
 }
 
 defineExpose({
@@ -302,8 +265,6 @@ defineExpose({
 
 async function updateMarkers(items: (EquipementSportifItem | EspaceVertItem | FontaineItem)[]) {
   if (!isClient || !mapInstance.value) return
-
-  console.log('Mise à jour des marqueurs:', items.length, 'éléments')
 
   markers.value.forEach(marker => {
     if (marker && mapInstance.value && mapInstance.value.hasLayer(marker)) {
@@ -318,15 +279,13 @@ async function updateMarkers(items: (EquipementSportifItem | EspaceVertItem | Fo
     return coords !== null
   })
 
-  console.log(`Items avec coordonnées valides: ${validItems.length}/${items.length}`)
-
   for (const item of validItems) {
     const coords = getValidCoordinates(item)
     if (coords) {
       try {
         await createMarker({ ...item, latitude: coords.lat, longitude: coords.lng })
       } catch (error) {
-        console.error('Erreur création marqueur:', error, item)
+        // Silently handle marker creation errors
       }
     }
   }
@@ -340,14 +299,11 @@ async function updateMarkers(items: (EquipementSportifItem | EspaceVertItem | Fo
         mapInstance.value?.invalidateSize()
       }, 300)
     } catch (error) {
-      console.error('Erreur lors du calcul des bounds:', error)
       setTimeout(() => {
         mapInstance.value?.invalidateSize()
       }, 300)
     }
   }
-
-  console.log('Marqueurs mis à jour:', markers.value.length)
 }
 
 function getValidCoordinates(item: EquipementSportifItem | EspaceVertItem | FontaineItem): { lat: number; lng: number } | null {
@@ -374,17 +330,10 @@ function getValidCoordinates(item: EquipementSportifItem | EspaceVertItem | Font
         lat >= -90 && lat <= 90 &&
         lng >= -180 && lng <= 180) {
 
-      // Uncomment if you want to filter only Paris area
-      // const isInParisArea = lat >= 48.8 && lat <= 48.9 && lng >= 2.2 && lng <= 2.5
-      // if (!isInParisArea) {
-      //   console.warn('Coordonnées hors de Paris:', [lat, lng])
-      //   return null
-      // }
-
       return { lat, lng }
     }
   } catch (error) {
-    console.error('Erreur lors de la validation des coordonnées:', error, item)
+    // Silently handle coordinate validation errors
   }
 
   return null
@@ -415,25 +364,13 @@ async function createMarker(item: EquipementSportifItem | EspaceVertItem | Fonta
 
     marker.bindPopup(popup)
 
-    marker.on('popupopen', () => {
-      console.log('Popup ouvert pour:', item.nom || item.adresse)
-    })
-
-    marker.on('popupclose', () => {
-      console.log('Popup fermé')
-    })
-
     marker.addTo(mapInstance.value)
 
     if (mapInstance.value.hasLayer(marker)) {
       markers.value.push(marker)
-      console.log('Marqueur ajouté:', item.nom || item.adresse)
-    } else {
-      console.warn('Échec ajout marqueur:', item.nom || item.adresse)
     }
-
   } catch (error) {
-    console.error('Erreur création marqueur:', error, item)
+    // Silently handle marker creation errors
   }
 }
 
@@ -471,7 +408,6 @@ async function getItemIcon(item: EquipementSportifItem | EspaceVertItem | Fontai
       iconAnchor: [14, 14]
     }
   } catch (error) {
-    console.error('Erreur création icône:', error, item)
     return {
       html: `
         <div class="custom-marker-container">
@@ -567,10 +503,7 @@ function createPopupContent(item: EquipementSportifItem | EspaceVertItem | Fonta
 
 function flyToLocation(lat: number, lng: number) {
   if (isClient && mapInstance.value) {
-    console.log(`Animation vers [${lat}, ${lng}] avec zoom 16`)
     mapInstance.value.flyTo([lat, lng], 16)
-  } else {
-    console.warn('Impossible de centrer : carte non initialisée')
   }
 }
 
