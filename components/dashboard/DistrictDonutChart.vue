@@ -34,11 +34,16 @@ const mousePosition = ref({ x: 0, y: 0 })
 // Configuration du graphique donut
 const donutConfig = computed(() => createDonutConfig(props.data, 'total', 'displayName'))
 
+// Vérification que nous avons des données valides
+const hasValidData = computed(() => {
+  return props.data && props.data.length > 0 && props.data.some(item => item.total > 0)
+})
+
 // Données transformées pour le rendu SVG
 const donutData = computed(() => {
   const { data, total, config } = donutConfig.value
   
-  if (!data.length) return []
+  if (!data.length || total === 0) return []
   
   let cumulativeAngle = 0
   
@@ -125,7 +130,7 @@ const displayedItems = computed(() => donutData.value.length)
       </CardDescription>
     </CardHeader>
     <CardContent>
-      <div v-if="isChartReady && donutData.length > 0" class="relative flex items-center justify-center">
+      <div v-if="hasValidData" class="relative flex items-center justify-center">
         <!-- Graphique SVG optimisé -->
         <svg viewBox="0 0 240 240" class="w-60 h-60">
           <g>

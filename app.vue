@@ -40,10 +40,8 @@ useSeoMeta({
   ogTitle: title,
   ogDescription: description,
   ogUrl: 'https://dashboard.dianprata.com',
-  ogImage: 'https://nuxt-shadcn-dashboard.vercel.app/social-card.png',
   twitterTitle: title,
   twitterDescription: description,
-  twitterImage: 'https://nuxt-shadcn-dashboard.vercel.app/social-card.png',
   twitterCard: 'summary_large_image',
 })
 

@@ -13,50 +13,51 @@ function navigateToPointFrais() {
       <div class="absolute inset-0 opacity-5" />
 
       <div class="relative px-4 lg:px-6 py-16 lg:py-24">
+        <div class="max-w-7xl mx-auto">
+          <div class="space-y-8 text-center">
 
-        <div class="space-y-8">
+            <h1 class="font-medium max-w-5xl mx-auto leading-tight font-nexa text-2xl md:text-4xl lg:text-6xl text-foreground">
+              SOS Paris <span class="bg-[#5F259F] text-white px-2 py-1 rounded">surchauffe</span>. Trouvez une zone fraîcheur en quelques clics
+            </h1>
 
-          <h1 class="font-medium max-w-5xl leading-tight font-nexa text-2xl md:text-4xl lg:text-6xl text-foreground">
-            SOS Paris <span class="bg-[#5F259F] text-white px-2 py-1 rounded">surchauffe</span>. Trouvez une zone fraîcheur en quelques clics
-          </h1>
+            <p class="max-w-4xl mx-auto font-normal leading-relaxed text-muted-foreground text-xl">
+              Découvrez les équipements sportifs, espaces verts et fontaines à boire de Paris.
+              Restez au frais cet été grâce aux données Open Data.
+            </p>
 
-          <p class="max-w-4xl font-normal leading-relaxed text-muted-foreground text-xl">
-            Découvrez les équipements sportifs, espaces verts et fontaines à boire de Paris.
-            Restez au frais cet été grâce aux données Open Data.
-          </p>
+            <div class="pt-0 flex justify-center">
+              <Button
+                size="lg"
+                class="bg-[#5F259F] hover:bg-[#5F259F]/90 px-8 py-4 text-lg font-semibold text-white shadow-lg transition-all duration-300 hover:shadow-xl"
+                @click="navigateToPointFrais"
+              >
+                <Icon name="i-lucide-map-pin" class="h-5 w-5 mr-2" />
+                Trouver un point frais
+              </Button>
+            </div>
 
-          <div class="pt-0">
-            <Button
-              size="xld"
-              class="bg-[#5F259F] hover:bg-[#5F259F]/90 px-8 py-4 text-lg font-semibold text-white shadow-lg transition-all duration-300 hover:shadow-xl"
-              @click="navigateToPointFrais"
-            >
-              <Icon name="i-lucide-map-pin" class="h-5 w-5 mr-2" />
-              Trouver un point frais
-            </Button>
-          </div>
+            <div class="max-w-2xl mx-auto space-y-6" />
 
-          <div class="max-w-2xl space-y-6" />
-
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 lg:gap-4 pt-8 w-full px-2 lg:px-0">
-            <AppCard
-              title="Ilots de fraîcheur"
-              description="Les îlots de fraîcheur sont des sources de rafraîchissement par rapport à leur environnement proche en période chaude ou caniculaire."
-              :icon="['tree-pine', 'leaf', 'droplets']"
-              variant="froid"
-            />
-            <AppCard
-              title="Espaces verts"
-              description="Les îlots de fraîcheur sont des sources de rafraîchissement par rapport à leur environnement proche en période chaude ou caniculaire."
-              :icon="['leaf', 'tree-pine', 'flower']"
-              variant="nature"
-            />
-            <AppCard
-              title="Fontaines à boire"
-              description="Les îlots de fraîcheur sont des sources de rafraîchissement par rapport à leur environnement proche en période chaude ou caniculaire."
-              :icon="['droplets', 'glass-water', 'bottle']"
-              variant="eau"
-            />
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 lg:gap-4 pt-8 w-full max-w-7xl mx-auto px-2 lg:px-0">
+              <AppCard
+                title="Ilots de fraîcheur"
+                description="Les îlots de fraîcheur sont des sources de rafraîchissement par rapport à leur environnement proche en période chaude ou caniculaire."
+                :icon="['tree-pine', 'leaf', 'droplets']"
+                variant="froid"
+              />
+              <AppCard
+                title="Espaces verts"
+                description="Les îlots de fraîcheur sont des sources de rafraîchissement par rapport à leur environnement proche en période chaude ou caniculaire."
+                :icon="['leaf', 'tree-pine', 'flower']"
+                variant="nature"
+              />
+              <AppCard
+                title="Fontaines à boire"
+                description="Les îlots de fraîcheur sont des sources de rafraîchissement par rapport à leur environnement proche en période chaude ou caniculaire."
+                :icon="['droplets', 'glass-water', 'bottle']"
+                variant="eau"
+              />
+            </div>
           </div>
         </div>
       </div>

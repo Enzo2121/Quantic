@@ -97,12 +97,9 @@ function handleMouseLeave() {
 }
 
 function updateMousePosition(event: MouseEvent) {
-  const rect = event.currentTarget?.getBoundingClientRect()
-  if (rect) {
-    mousePosition.value = {
-      x: event.clientX - rect.left,
-      y: event.clientY - rect.top
-    }
+  mousePosition.value = {
+    x: event.clientX,
+    y: event.clientY
   }
 }
 </script>
@@ -127,10 +124,12 @@ function updateMousePosition(event: MouseEvent) {
                 :key="segment.status"
                 :d="createArcPath(segment.startAngle, segment.endAngle)"
                 :fill="segment.color"
+                :stroke="hoveredSegment === index ? '#ffffff' : 'transparent'"
+                :stroke-width="hoveredSegment === index ? '2' : '0'"
                 class="cursor-pointer transition-all duration-200"
                 :class="{
-                  'opacity-60': hoveredSegment === index,
-                  'opacity-80': hoveredSegment !== null && hoveredSegment !== index
+                  'opacity-80': hoveredSegment !== null && hoveredSegment !== index,
+                  'scale-105': hoveredSegment === index
                 }"
                 :style="{
                   transformOrigin: '100px 100px',
@@ -148,19 +147,25 @@ function updateMousePosition(event: MouseEvent) {
             <div class="text-sm text-muted-foreground">Fontaines</div>
           </div>
 
-          <div 
-            v-if="hoveredSegment !== null"
-            class="absolute bg-black/80 text-white px-3 py-2 rounded-md text-sm shadow-lg z-10 pointer-events-none transform -translate-x-1/2 -translate-y-full"
-            :style="{ 
-              top: `${mousePosition.y - 10}px`, 
-              left: `${mousePosition.x}px` 
-            }"
-          >
-            <div class="font-semibold">{{ donutData[hoveredSegment].status }}</div>
-            <div class="text-xs">
-              {{ donutData[hoveredSegment].count }} fontaines ({{ donutData[hoveredSegment].percentage }}%)
+          <!-- Tooltip sur hover avec Teleport -->
+          <Teleport to="body">
+            <div 
+              v-if="hoveredSegment !== null"
+              :style="{
+                position: 'fixed',
+                left: `${mousePosition.x + 10}px`,
+                top: `${mousePosition.y - 10}px`,
+                zIndex: 9999,
+                pointerEvents: 'none'
+              }"
+              class="bg-popover text-popover-foreground p-3 rounded-lg shadow-lg border text-sm"
+            >
+              <div class="font-semibold">{{ donutData[hoveredSegment].status }}</div>
+              <div class="text-muted-foreground">
+                {{ donutData[hoveredSegment].count }} fontaines ({{ donutData[hoveredSegment].percentage }}%)
+              </div>
             </div>
-          </div>
+          </Teleport>
         </div>
 
         <div class="flex flex-wrap gap-x-4 gap-y-2">
