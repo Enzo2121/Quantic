@@ -46,6 +46,7 @@ function handleReset() {
 
 // Gestionnaire pour ouvrir la modal de carte
 function handleOpenMapModal(item: UnifiedDataItem) {
+  console.log('Opening map modal for unified item:', item) // Debug
   selectedMapItem.value = item
   isMapModalOpen.value = true
 }

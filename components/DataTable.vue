@@ -60,11 +60,22 @@ function getCellValueInternal(item: any, column: string) {
 }
 
 function handleViewDetails(item: any) {
+  console.log('Opening map modal for item:', item) // Debug
   emit('openMapModal', item)
 }
 
-function handleOpenItinerary(_item: any) {
-  // Implementation for opening itinerary
+function handleOpenItinerary(item: any) {
+  if (item.latitude && item.longitude) {
+    // Ouvrir Google Maps avec l'itinéraire
+    const googleMapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${item.latitude},${item.longitude}`
+    window.open(googleMapsUrl, '_blank')
+  } else if (item.adresse) {
+    // Fallback avec l'adresse si pas de coordonnées
+    const googleMapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(item.adresse)}`
+    window.open(googleMapsUrl, '_blank')
+  } else {
+    console.warn('Impossible d\'ouvrir l\'itinéraire : aucune coordonnée ou adresse disponible')
+  }
 }
 
 function handleSort(column: string) {

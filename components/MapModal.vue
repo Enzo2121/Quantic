@@ -167,8 +167,8 @@ const showEtatFilter = computed(() => props.currentStore === 'fontaines')
         </div>
       </DialogHeader>
 
-      <!-- Filtres toujours visibles -->
-      <div class="border-b bg-background px-6 py-4 flex-shrink-0">
+      <!-- Filtres toujours visibles - masqués quand un item spécifique est sélectionné -->
+      <div v-if="!selectedItem" class="border-b bg-background px-6 py-4 flex-shrink-0">
         <div class="flex items-center gap-2 mb-3">
           <Icon name="i-lucide-filter" class="h-4 w-4" />
           <span class="font-medium">Filtres</span>
