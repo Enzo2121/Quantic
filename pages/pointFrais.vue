@@ -275,7 +275,7 @@ function handleFontainesReset() {
   <div class="w-full flex flex-col gap-6">
     <div class="flex flex-wrap items-center justify-between gap-4">
       <div>
-        <h1 class="font-nexa text-3xl font-bold tracking-tight text-violet">
+        <h1 class="font-nexa text-3xl font-bold tracking-tight text-black">
           Points Frais
         </h1>
         <p class="mt-2 text-muted-foreground">
@@ -283,13 +283,9 @@ function handleFontainesReset() {
         </p>
       </div>
       <div class="flex items-center gap-2">
-        <Button variant="outline" @click="navigateTo('/search')">
+        <Button variant="default" class="bg-quantic hover:bg-quantic/90" @click="navigateTo('/search')">
           <Icon name="i-lucide-search" class="mr-2 h-4 w-4" />
           Recherche unifiée
-        </Button>
-        <Button variant="outline" @click="navigateTo('/analytics')">
-          <Icon name="i-lucide-bar-chart-3" class="mr-2 h-4 w-4" />
-          Analyse des données
         </Button>
       </div>
     </div>

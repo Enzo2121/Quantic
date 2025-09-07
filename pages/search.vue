@@ -156,7 +156,7 @@ const quickStats = computed(() => {
     <!-- En-tête -->
     <div class="flex flex-wrap items-center justify-between gap-4">
       <div>
-        <h1 class="font-nexa text-3xl font-bold tracking-tight text-violet">
+        <h1 class="font-nexa text-3xl font-bold tracking-tight text-black">
           Recherche Unifiée
         </h1>
         <p class="mt-2 text-muted-foreground">
@@ -175,25 +175,25 @@ const quickStats = computed(() => {
     <div class="grid grid-cols-2 gap-4 md:grid-cols-4">
       <Card>
         <CardContent class="flex flex-col items-center justify-center p-6">
-          <div class="text-2xl font-bold text-violet">{{ quickStats.total }}</div>
+          <div class="text-2xl font-bold text-black">{{ quickStats.total }}</div>
           <div class="text-sm text-muted-foreground">Total des résultats</div>
         </CardContent>
       </Card>
       <Card>
         <CardContent class="flex flex-col items-center justify-center p-6">
-          <div class="text-2xl font-bold text-violet-600">{{ quickStats.equipements }}</div>
+          <div class="text-2xl font-bold text-black">{{ quickStats.equipements }}</div>
           <div class="text-sm text-muted-foreground">Équipements sportifs</div>
         </CardContent>
       </Card>
       <Card>
         <CardContent class="flex flex-col items-center justify-center p-6">
-          <div class="text-2xl font-bold text-green-600">{{ quickStats.espacesVerts }}</div>
+          <div class="text-2xl font-bold text-black">{{ quickStats.espacesVerts }}</div>
           <div class="text-sm text-muted-foreground">Espaces verts</div>
         </CardContent>
       </Card>
       <Card>
         <CardContent class="flex flex-col items-center justify-center p-6">
-          <div class="text-2xl font-bold text-blue-600">{{ quickStats.fontaines }}</div>
+          <div class="text-2xl font-bold text-black">{{ quickStats.fontaines }}</div>
           <div class="text-sm text-muted-foreground">Fontaines à boire</div>
         </CardContent>
       </Card>
