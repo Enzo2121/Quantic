@@ -78,10 +78,10 @@ watch(() => route.path, () => {
             size="default"
             class="bg-[#5F259F] hover:bg-[#5F259F]/90 text-white px-6 py-2 hidden lg:flex"
           >
-            <NuxtLink to="/analytics" class="flex items-center gap-2">
+            <a href="https://github.com/Enzo2121/Quantic" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2">
               <Icon name="i-lucide-github" class="h-4 w-4" />
               <span class="hidden sm:inline">Repo Github</span>
-            </NuxtLink>
+            </a>
           </Button>
 
           <Button
