@@ -38,7 +38,6 @@ const props = withDefaults(defineProps<{
 
 const {
   getFormattedValue,
-  columnConfigs,
 } = useDashboardUtils()
 
 function getCellValueInternal(item: any, column: string) {
@@ -48,29 +47,7 @@ function getCellValueInternal(item: any, column: string) {
   
   const value = getFormattedValue(item, column, props.type)
   
-  if (typeof value === 'object' && 'variant' in value) {
-    return renderBadgeFromFormattedValue(value)
-  }
-  
   return value
-}
-
-function renderBadgeFromFormattedValue(config: { variant: string; icon: string; label: string }): string {
-  const variantClasses: Record<string, string> = {
-    success: 'text-green-600',
-    warning: 'text-orange-600',
-    info: 'text-blue-600',
-    muted: 'text-muted-foreground italic',
-    default: 'text-gray-700',
-  }
-
-  const className = variantClasses[config.variant] || variantClasses.default
-  
-  if (config.variant === 'muted') {
-    return `<span class="${className}">${config.label}</span>`
-  }
-
-  return `<span class="inline-flex items-center gap-1 ${className}"><i class="${config.icon} w-4 h-4"></i>${config.label}</span>`
 }
 
 function handleViewDetails(item: any) {
@@ -104,6 +81,27 @@ function getSortIcon(column: string) {
 }
 
 const pageSizeOptions = [10, 20, 50, 100]
+
+function getBadgeClasses(badgeConfig: any) {
+  if (!badgeConfig?.variant) {
+    return ''
+  }
+  
+  const baseClasses = 'inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium'
+  
+  switch (badgeConfig.variant) {
+    case 'success':
+      return `${baseClasses} text-green-600 bg-green-50 border border-green-200`
+    case 'warning':
+      return `${baseClasses} text-orange-600 bg-orange-50 border border-orange-200`
+    case 'info':
+      return `${baseClasses} text-blue-600 bg-blue-50 border border-blue-200`
+    case 'muted':
+      return `${baseClasses} text-gray-600 bg-gray-50 border border-gray-200`
+    default:
+      return `${baseClasses} text-gray-700 bg-gray-100 border border-gray-300`
+  }
+}
 </script>
 
 <template>
@@ -138,12 +136,23 @@ const pageSizeOptions = [10, 20, 50, 100]
           <template v-else-if="data && data.length">
             <TableRow v-for="item in data" :key="item.id || Math.random()">
               <TableCell v-for="column in columns" :key="column">
-                <div v-if="getCellValueInternal" class="font-medium">
-                  <span v-if="column === 'horaires' || column === 'ouvert_24h' || column === 'canicule_ouverture'" v-html="getCellValueInternal(item, column) || '-'" />
-                  <span v-else>{{ getCellValueInternal(item, column) || '-' }}</span>
-                </div>
-                <div v-else class="font-medium">
-                  {{ item[column] || '-' }}
+                <div class="font-medium">
+                  <template v-if="getCellValueInternal">
+                    <!-- Affichage des badges pour les colonnes avec BadgeConfig -->
+                    <template v-if="typeof getCellValueInternal(item, column) === 'object' && getCellValueInternal(item, column)?.variant">
+                      <span class="inline-flex items-center gap-1" :class="getBadgeClasses(getCellValueInternal(item, column))">
+                        <Icon :name="getCellValueInternal(item, column).icon" class="h-4 w-4" />
+                        {{ getCellValueInternal(item, column).label }}
+                      </span>
+                    </template>
+                    <!-- Affichage normal pour les autres colonnes -->
+                    <template v-else>
+                      {{ getCellValueInternal(item, column) || '-' }}
+                    </template>
+                  </template>
+                  <template v-else>
+                    {{ item[column] || '-' }}
+                  </template>
                 </div>
               </TableCell>
               <TableCell>

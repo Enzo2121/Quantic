@@ -20,46 +20,16 @@ useHead({
 const { equipementsStore, espacesVertsStore, fontainesStore, stats, initializeStores, loadStoreData } = useDashboardStores()
 const { getFormattedValue, columnConfigs } = useDashboardUtils()
 
-function renderBadgeFromFormattedValue(config: { variant: string; icon: string; label: string }): string {
-  const variantClasses: Record<string, string> = {
-    success: 'text-green-600',
-    warning: 'text-orange-600',
-    info: 'text-blue-600',
-    muted: 'text-muted-foreground italic',
-    default: 'text-gray-700',
-  }
-
-  const className = variantClasses[config.variant] || variantClasses.default
-  
-  if (config.variant === 'muted') {
-    return `<span class="${className}">${config.label}</span>`
-  }
-
-  return `<span class="inline-flex items-center gap-1 ${className}"><i class="${config.icon} w-4 h-4"></i>${config.label}</span>`
+function getEquipementCellValue(item: any, column: string): any {
+  return getFormattedValue(item, column, 'equipements')
 }
 
-function getEquipementCellValue(item: any, column: string): string {
-  const value = getFormattedValue(item, column, 'equipements')
-  if (typeof value === 'string') {
-    return value
-  }
-  return renderBadgeFromFormattedValue(value)
+function getEspaceVertCellValue(item: any, column: string): any {
+  return getFormattedValue(item, column, 'espaces-verts')
 }
 
-function getEspaceVertCellValue(item: any, column: string): string {
-  const value = getFormattedValue(item, column, 'espaces-verts')
-  if (typeof value === 'string') {
-    return value
-  }
-  return renderBadgeFromFormattedValue(value)
-}
-
-function getFontaineCellValue(item: any, column: string): string {
-  const value = getFormattedValue(item, column, 'fontaines')
-  if (typeof value === 'string') {
-    return value
-  }
-  return renderBadgeFromFormattedValue(value)
+function getFontaineCellValue(item: any, column: string): any {
+  return getFormattedValue(item, column, 'fontaines')
 }
 
 const equipementsColumns = computed(() => [...columnConfigs.value.equipements])
