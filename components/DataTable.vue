@@ -37,9 +37,8 @@ const props = withDefaults(defineProps<{
 })
 
 const {
-  getEquipementCellValue,
-  getEspaceVertCellValue,
-  getFontaineCellValue,
+  getFormattedValue,
+  columnConfigs,
 } = useDashboardUtils()
 
 function getCellValueInternal(item: any, column: string) {
@@ -47,33 +46,47 @@ function getCellValueInternal(item: any, column: string) {
     return props.getCellValue(item, column)
   }
   
-  switch (props.type) {
-    case 'equipements':
-      return getEquipementCellValue(item, column)
-    case 'espaces-verts':
-      return getEspaceVertCellValue(item, column)
-    case 'fontaines':
-      return getFontaineCellValue(item, column)
-    default:
-      return item[column] || '-'
+  const value = getFormattedValue(item, column, props.type)
+  
+  if (typeof value === 'object' && 'variant' in value) {
+    return renderBadgeFromFormattedValue(value)
   }
+  
+  return value
+}
+
+function renderBadgeFromFormattedValue(config: { variant: string; icon: string; label: string }): string {
+  const variantClasses: Record<string, string> = {
+    success: 'text-green-600',
+    warning: 'text-orange-600',
+    info: 'text-blue-600',
+    muted: 'text-muted-foreground italic',
+    default: 'text-gray-700',
+  }
+
+  const className = variantClasses[config.variant] || variantClasses.default
+  
+  if (config.variant === 'muted') {
+    return `<span class="${className}">${config.label}</span>`
+  }
+
+  return `<span class="inline-flex items-center gap-1 ${className}"><i class="${config.icon} w-4 h-4"></i>${config.label}</span>`
 }
 
 function handleViewDetails(item: any) {
-  console.log('Opening map modal for item:', item) // Debug
   emit('openMapModal', item)
 }
 
 function handleOpenItinerary(item: any) {
   if (item.latitude && item.longitude) {
-    // Ouvrir Google Maps avec l'itinéraire
     const googleMapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${item.latitude},${item.longitude}`
     window.open(googleMapsUrl, '_blank')
-  } else if (item.adresse) {
-    // Fallback avec l'adresse si pas de coordonnées
+  }
+  else if (item.adresse) {
     const googleMapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(item.adresse)}`
     window.open(googleMapsUrl, '_blank')
-  } else {
+  }
+  else {
     console.warn('Impossible d\'ouvrir l\'itinéraire : aucune coordonnée ou adresse disponible')
   }
 }
@@ -95,7 +108,6 @@ const pageSizeOptions = [10, 20, 50, 100]
 
 <template>
   <div class="space-y-4">
-    <!-- Tableau -->
     <div class="border rounded-md">
       <Table>
         <TableHeader>

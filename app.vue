@@ -47,10 +47,6 @@ useSeoMeta({
 
 const router = useRouter()
 
-defineShortcuts({
-  'G-H': () => router.push('/'),
-})
-
 const useIdFunction = () => useId()
 
 const textDirection = useTextDirection({ initialValue: 'ltr' })

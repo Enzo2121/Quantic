@@ -18,10 +18,10 @@ export interface BaseFilters {
 }
 
 export interface LazyLoadingConfig {
-  initialLoadSize: number // 20 éléments au départ
-  mediumLoadSize: number // 200 éléments pour recherche
-  fullLoadSize: number // 1000 éléments pour exploration complète
-  autoLoadOnSearch: boolean // Charger automatiquement en mode medium lors de recherche
+  initialLoadSize: number
+  mediumLoadSize: number
+  fullLoadSize: number
+  autoLoadOnSearch: boolean
 }
 
 export interface NuxtDataStoreConfig<_T extends BaseDataItem, F extends BaseFilters> {
@@ -35,11 +35,10 @@ export interface NuxtDataStoreConfig<_T extends BaseDataItem, F extends BaseFilt
 export function useNuxtDataStore<T extends BaseDataItem, F extends BaseFilters>(
   config: NuxtDataStoreConfig<T, F>,
 ) {
-  // Configuration lazy loading avec valeurs par défaut
   const lazyConfig = {
     initialLoadSize: 20,
     mediumLoadSize: 200,
-    fullLoadSize: 1500, // Augmenté pour les fontaines
+    fullLoadSize: 1500,
     autoLoadOnSearch: true,
     ...config.lazyLoading,
   }
@@ -47,17 +46,15 @@ export function useNuxtDataStore<T extends BaseDataItem, F extends BaseFilters>(
   const filters = ref<F>({ ...config.defaultFilters })
   const pagination = ref({
     page: 1,
-    pageSize: lazyConfig.initialLoadSize, // Commencer avec la taille initiale
+    pageSize: lazyConfig.initialLoadSize,
   })
   const sortBy = ref<string | null>(null)
   const sortOrder = ref<'asc' | 'desc'>('asc')
 
-  // État lazy loading
   const loadingMode = ref<'initial' | 'medium' | 'full'>('initial')
   const isLoadingMore = ref(false)
   const hasLoadedMore = ref(false)
 
-  // Système pour les options complètes (tous les types/arrondissements disponibles)
   const allDataForOptions = ref<T[]>([])
   const isLoadingOptions = ref(false)
   const optionsLoaded = ref(false)
@@ -69,7 +66,7 @@ export function useNuxtDataStore<T extends BaseDataItem, F extends BaseFilters>(
     refresh,
     clear,
   } = useFetch<{ records: T[], nhits: number, parameters: any }>(config.endpoint, {
-    key: config.storeKey, // Clé statique simple
+    key: config.storeKey,
 
     query: computed(() => {
       const query: Record<string, any> = {
@@ -100,9 +97,9 @@ export function useNuxtDataStore<T extends BaseDataItem, F extends BaseFilters>(
       return query
     }),
 
-    server: true, // Revenir à server: true pour éviter les problèmes d'hydratation
-    lazy: false, // Revenir à lazy: false pour un chargement immédiat
-    dedupe: 'cancel', // Optimisation pour éviter les requêtes dupliquées
+    server: true,
+    lazy: false,
+    dedupe: 'cancel',
 
     default: () => ({ records: [], nhits: 0, parameters: {} }),
 
@@ -478,7 +475,6 @@ export function useNuxtDataStore<T extends BaseDataItem, F extends BaseFilters>(
   })
 
   return {
-    // Direct state properties - no wrapper to avoid proxy conflicts
     filters,
     loading: computed(() => isLoading.value),
     error: computed(() => error.value?.message || null),
@@ -490,7 +486,6 @@ export function useNuxtDataStore<T extends BaseDataItem, F extends BaseFilters>(
     sortOrder,
     isLoaded: computed(() => isLoaded.value),
     
-    // Data properties
     data: computed(() => data.value),
     filteredData: computed(() => data.value),
     currentPageData,

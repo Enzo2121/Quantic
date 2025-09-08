@@ -18,7 +18,7 @@ export const useEspacesVertsStore = defineStore('espaces-verts', () => {
     lazyLoading: {
       initialLoadSize: 20,
       mediumLoadSize: 200,
-      fullLoadSize: 1500, // Augmenté pour récupérer tous les espaces verts
+      fullLoadSize: 1500, 
       autoLoadOnSearch: true,
     },
   })

@@ -110,7 +110,6 @@ export function useChart<T extends ChartDataItem>(options: {
       isChartReady.value = true
       callback?.()
     } catch (error) {
-      // Silently handle errors
     }
   }
 
@@ -129,7 +128,6 @@ export function useChart<T extends ChartDataItem>(options: {
         htmlElement.setAttribute('data-color', color)
       })
     } catch (error) {
-      // Silently handle errors
     }
   }
 

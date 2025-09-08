@@ -1,176 +1,101 @@
 import type { UnifiedDataItem, UnifiedFilters, SelectOption } from '~/types/datasets'
 
+type SourceType = 'equipements' | 'espaces-verts' | 'fontaines'
+type FilterKeys = keyof Omit<UnifiedFilters, 'search' | 'sources'>
+
 export const useUnifiedDataStore = defineStore('unified-data', () => {
   const data = ref<UnifiedDataItem[]>([])
   const filteredData = ref<UnifiedDataItem[]>([])
   const filters = ref<UnifiedFilters>({
     search: '',
     sources: ['equipements', 'espaces-verts', 'fontaines'],
-    types: [],
-    arrondissements: [],
-    categories: [],
-    etats: [],
-    tarifs: [],
-    horaires: [],
+    types: [], arrondissements: [], categories: [], etats: [], tarifs: [], horaires: [],
   })
   const loading = ref(false)
   const error = ref<string | null>(null)
-  const pagination = ref({
-    page: 1,
-    pageSize: 20,
-    total: 0,
-  })
-  const sort = ref({
-    sortBy: null as string | null,
-    sortOrder: 'asc' as 'asc' | 'desc',
-  })
+  const pagination = ref({ page: 1, pageSize: 20, total: 0 })
+  const sort = ref({ sortBy: null as string | null, sortOrder: 'asc' as 'asc' | 'desc' })
   const filterOptions = ref<Record<string, SelectOption[]>>({})
   const isLoaded = ref(false)
   
-  // Références aux stores individuels
-  const equipementsStore = useEquipementsSportifsStore()
-  const espacesVertsStore = useEspacesVertsStore()
-  const fontainesStore = useFontainesStore()
+  const stores = {
+    equipements: useEquipementsSportifsStore(),
+    'espaces-verts': useEspacesVertsStore(),
+    fontaines: useFontainesStore(),
+  }
 
-  // Fonction pour transformer les données individuelles en format unifié
+  const transformConfigs = {
+    equipements: (item: any) => ({
+      source: 'equipements' as const,
+      payant: item.payant,
+      horaires: item.horaires,
+    }),
+    'espaces-verts': (item: any) => ({
+      source: 'espaces-verts' as const,
+      categorie: item.categorie,
+      superficie: item.superficie,
+      ouvert_24h: item.ouvert_24h,
+      canicule_ouverture: item.canicule_ouverture,
+      horaires: item.ouvert_24h === 'Oui' ? 'Ouvert 24h/24' : 'Horaires normaux',
+    }),
+    fontaines: (item: any) => ({
+      source: 'fontaines' as const,
+      etat: item.etat,
+    }),
+  }
+
   function transformToUnified(): UnifiedDataItem[] {
-    const unifiedData: UnifiedDataItem[] = []
+    return filters.value.sources.flatMap(source => 
+      (stores[source].data || []).map(item => ({
+        id: `${source}_${item.id || item.recordid}`,
+        nom: item.nom || item.name || '',
+        type: item.type || '',
+        adresse: item.adresse || item.address || '',
+        arrondissement: item.arrondissement || '',
+        latitude: item.latitude || item.lat,
+        longitude: item.longitude || item.lng,
+        sourceType: item.type || '',
+        ...transformConfigs[source](item),
+      }))
+    )
+  }
 
-    // Transformer équipements sportifs
-    if (filters.value.sources.includes('equipements')) {
-      const equipementsData = equipementsStore.data || []
-      equipementsData.forEach(item => {
-        unifiedData.push({
-          id: `equipements_${item.id || item.recordid}`,
-          nom: item.nom || item.name || '',
-          type: item.type || '',
-          adresse: item.adresse || item.address || '',
-          arrondissement: item.arrondissement || '',
-          latitude: item.latitude || item.lat,
-          longitude: item.longitude || item.lng,
-          source: 'equipements',
-          sourceType: item.type || '',
-          payant: item.payant,
-          horaires: item.horaires,
-        })
-      })
-    }
-
-    // Transformer espaces verts
-    if (filters.value.sources.includes('espaces-verts')) {
-      const espacesData = espacesVertsStore.data || []
-      espacesData.forEach(item => {
-        unifiedData.push({
-          id: `espaces-verts_${item.id || item.recordid}`,
-          nom: item.nom || item.name || '',
-          type: item.type || '',
-          adresse: item.adresse || item.address || '',
-          arrondissement: item.arrondissement || '',
-          latitude: item.latitude || item.lat,
-          longitude: item.longitude || item.lng,
-          source: 'espaces-verts',
-          sourceType: item.type || '',
-          categorie: item.categorie,
-          superficie: item.superficie,
-          ouvert_24h: item.ouvert_24h,
-          canicule_ouverture: item.canicule_ouverture,
-          horaires: item.ouvert_24h === 'Oui' ? 'Ouvert 24h/24' : 'Horaires normaux',
-        })
-      })
-    }
-
-    // Transformer fontaines
-    if (filters.value.sources.includes('fontaines')) {
-      const fontainesData = fontainesStore.data || []
-      fontainesData.forEach(item => {
-        unifiedData.push({
-          id: `fontaines_${item.id || item.recordid}`,
-          nom: item.nom || item.name || '',
-          type: item.type || '',
-          adresse: item.adresse || item.address || '',
-          arrondissement: item.arrondissement || '',
-          latitude: item.latitude || item.lat,
-          longitude: item.longitude || item.lng,
-          source: 'fontaines',
-          sourceType: item.type || '',
-          etat: item.etat,
-        })
-      })
-    }
-
-    return unifiedData
+  const filterConfig: Record<FilterKeys, (item: UnifiedDataItem, values: string[]) => boolean> = {
+    types: (item, values) => values.includes(item.type),
+    arrondissements: (item, values) => values.includes(item.arrondissement),
+    categories: (item, values) => item.source !== 'espaces-verts' || !item.categorie || values.includes(item.categorie),
+    etats: (item, values) => item.source !== 'fontaines' || !item.etat || values.includes(item.etat),
+    tarifs: (item, values) => item.source !== 'equipements' || !item.payant || values.includes(item.payant),
+    horaires: (item, values) => !item.horaires || values.some(h => 
+      item.horaires?.includes(h) || (h === 'Ouvert 24h/24' && item.ouvert_24h === 'Oui')
+    ),
   }
 
   function applyFilters(dataToFilter: UnifiedDataItem[]): UnifiedDataItem[] {
-    let filtered = [...dataToFilter]
+    let filtered = dataToFilter
 
-    // Filtre par recherche
-    if (filters.value.search && filters.value.search.trim()) {
-      const searchTerm = filters.value.search.toLowerCase()
-      filtered = filtered.filter(item =>
-        (item.nom && item.nom.toLowerCase().includes(searchTerm)) ||
-        (item.adresse && item.adresse.toLowerCase().includes(searchTerm)) ||
-        (item.type && item.type.toLowerCase().includes(searchTerm)) ||
-        (item.arrondissement && item.arrondissement.toLowerCase().includes(searchTerm))
+    if (filters.value.search?.trim()) {
+      const search = filters.value.search.toLowerCase()
+      filtered = filtered.filter(item => 
+        [item.nom, item.adresse, item.type, item.arrondissement]
+          .some(field => field?.toLowerCase().includes(search))
       )
     }
 
-    // Filtre par sources
-    if (filters.value.sources && filters.value.sources.length > 0) {
-      filtered = filtered.filter(item =>
-        filters.value.sources.includes(item.source)
-      )
+    if (filters.value.sources.length > 0) {
+      filtered = filtered.filter(item => filters.value.sources.includes(item.source))
     }
 
-    // Filtre par types
-    if (filters.value.types && filters.value.types.length > 0) {
-      filtered = filtered.filter(item =>
-        filters.value.types.includes(item.type)
-      )
-    }
-
-    // Filtre par arrondissements
-    if (filters.value.arrondissements && filters.value.arrondissements.length > 0) {
-      filtered = filtered.filter(item =>
-        filters.value.arrondissements.includes(item.arrondissement)
-      )
-    }
-
-    // Filtre par catégories (espaces verts uniquement)
-    if (filters.value.categories && filters.value.categories.length > 0) {
-      filtered = filtered.filter(item =>
-        item.source !== 'espaces-verts' || !item.categorie || filters.value.categories.includes(item.categorie)
-      )
-    }
-
-    // Filtre par états (fontaines uniquement)
-    if (filters.value.etats && filters.value.etats.length > 0) {
-      filtered = filtered.filter(item =>
-        item.source !== 'fontaines' || !item.etat || filters.value.etats.includes(item.etat)
-      )
-    }
-
-    // Filtre par tarifs (équipements uniquement)
-    if (filters.value.tarifs && filters.value.tarifs.length > 0) {
-      filtered = filtered.filter(item =>
-        item.source !== 'equipements' || !item.payant || filters.value.tarifs.includes(item.payant)
-      )
-    }
-
-    // Filtre par horaires
-    if (filters.value.horaires && filters.value.horaires.length > 0) {
-      filtered = filtered.filter(item =>
-        !item.horaires || filters.value.horaires.some(h => 
-          item.horaires?.includes(h) || 
-          (h === 'Ouvert 24h/24' && item.ouvert_24h === 'Oui')
-        )
-      )
+    for (const [key, filterFn] of Object.entries(filterConfig)) {
+      const values = filters.value[key as FilterKeys]
+      if (values.length > 0) {
+        filtered = filtered.filter(item => filterFn(item, values))
+      }
     }
 
     return filtered
   }
 
-  // Fonction pour charger toutes les données
   async function loadAllData() {
     if (loading.value) return
     
@@ -178,168 +103,94 @@ export const useUnifiedDataStore = defineStore('unified-data', () => {
     error.value = null
 
     try {
-      // S'assurer que tous les stores sont disponibles
       await nextTick()
-      
-      // Forcer le chargement des données depuis les stores individuels
-      await equipementsStore.loadMoreData('full')
-      
-      await espacesVertsStore.loadMoreData('full')
-      
-      await fontainesStore.loadMoreData('full')
+      await Promise.all([
+        stores.equipements.loadMoreData('full'),
+        stores['espaces-verts'].loadMoreData('full'),
+        stores.fontaines.loadMoreData('full'),
+      ])
 
-      // Attendre un peu pour s'assurer que les données sont disponibles
       await nextTick()
-
-      // Transformer et unifier les données
-      const allData = transformToUnified()
-      
-      // Afficher le détail par source
-      const equipementsCount = allData.filter(item => item.source === 'equipements').length
-      const espacesCount = allData.filter(item => item.source === 'espaces-verts').length
-      const fontainesCount = allData.filter(item => item.source === 'fontaines').length
-      
-      data.value = allData
-
-      // Appliquer les filtres
+      data.value = transformToUnified()
       filteredData.value = applyFilters(data.value)
       pagination.value.total = filteredData.value.length
-
-      // Calculer les options de filtres
       calculateFilterOptions()
-
       isLoaded.value = true
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Erreur lors du chargement des données'
-      // Production: silent error handling
     } finally {
       loading.value = false
     }
   }
 
-  // Fonction pour mettre à jour les filtres
   async function updateFilters(newFilters: Partial<UnifiedFilters>) {
-    filters.value = { ...filters.value, ...newFilters }
+    Object.assign(filters.value, newFilters)
     pagination.value.page = 1
-
-    // Reappliquer les filtres
     filteredData.value = applyFilters(data.value)
     pagination.value.total = filteredData.value.length
   }
 
-  // Fonction pour calculer les options de filtres dynamiquement
-  function calculateFilterOptions() {
-    const options: Record<string, SelectOption[]> = {}
+  const optionsConfig = {
+    types: { sourceFilter: null, field: 'type', sortBy: 'count' },
+    arrondissements: { sourceFilter: null, field: 'arrondissement', sortBy: 'label' },
+    categories: { sourceFilter: 'espaces-verts', field: 'categorie', sortBy: 'count' },
+    etats: { sourceFilter: 'fontaines', field: 'etat', sortBy: 'count' },
+    tarifs: { sourceFilter: 'equipements', field: 'payant', sortBy: 'count' },
+    horaires: { sourceFilter: null, field: 'horaires', sortBy: 'count' },
+  }
 
-    if (data.value.length === 0) {
-      filterOptions.value = options
+  function calculateFilterOptions() {
+    if (!data.value.length) {
+      filterOptions.value = {}
       return
     }
 
-    // Types (tous datasets confondus)
-    const typesMap = new Map<string, number>()
-    data.value.forEach(item => {
-      if (item.type) {
-        const type = item.type
-        typesMap.set(type, (typesMap.get(type) || 0) + 1)
-      }
-    })
-    options.types = Array.from(typesMap.entries())
-      .map(([value, count]) => ({ value, label: value, count }))
-      .sort((a, b) => b.count - a.count)
+    const options: Record<string, SelectOption[]> = {}
 
-    // Arrondissements
-    const arrondissementsMap = new Map<string, number>()
-    data.value.forEach(item => {
-      if (item.arrondissement) {
-        const arr = item.arrondissement
-        arrondissementsMap.set(arr, (arrondissementsMap.get(arr) || 0) + 1)
-      }
-    })
-    options.arrondissements = Array.from(arrondissementsMap.entries())
-      .map(([value, count]) => ({ value, label: value, count }))
-      .sort((a, b) => a.label.localeCompare(b.label))
+    for (const [key, config] of Object.entries(optionsConfig)) {
+      const map = new Map<string, number>()
+      const sourceFilteredData = config.sourceFilter 
+        ? data.value.filter(item => item.source === config.sourceFilter)
+        : data.value
 
-    // Catégories (espaces verts)
-    const categoriesMap = new Map<string, number>()
-    data.value.filter(item => item.source === 'espaces-verts' && item.categorie).forEach(item => {
-      const cat = item.categorie!
-      categoriesMap.set(cat, (categoriesMap.get(cat) || 0) + 1)
-    })
-    options.categories = Array.from(categoriesMap.entries())
-      .map(([value, count]) => ({ value, label: value, count }))
-      .sort((a, b) => b.count - a.count)
+      sourceFilteredData.forEach(item => {
+        const value = item[config.field as keyof UnifiedDataItem] as string
+        if (value && value.trim()) {
+          map.set(value, (map.get(value) || 0) + 1)
+        }
+      })
 
-    // États (fontaines)
-    const etatsMap = new Map<string, number>()
-    data.value.filter(item => item.source === 'fontaines' && item.etat).forEach(item => {
-      const etat = item.etat!
-      etatsMap.set(etat, (etatsMap.get(etat) || 0) + 1)
-    })
-    options.etats = Array.from(etatsMap.entries())
-      .map(([value, count]) => ({ value, label: value, count }))
-      .sort((a, b) => b.count - a.count)
-
-    // Tarifs (équipements)
-    const tarifsMap = new Map<string, number>()
-    data.value.filter(item => item.source === 'equipements' && item.payant).forEach(item => {
-      const tarif = item.payant!
-      tarifsMap.set(tarif, (tarifsMap.get(tarif) || 0) + 1)
-    })
-    options.tarifs = Array.from(tarifsMap.entries())
-      .map(([value, count]) => ({ value, label: value, count }))
-      .sort((a, b) => b.count - a.count)
-
-    // Horaires
-    const horairesMap = new Map<string, number>()
-    data.value.forEach(item => {
-      if (item.horaires) {
-        horairesMap.set(item.horaires, (horairesMap.get(item.horaires) || 0) + 1)
-      }
-    })
-    options.horaires = Array.from(horairesMap.entries())
-      .map(([value, count]) => ({ value, label: value, count }))
-      .sort((a, b) => b.count - a.count)
+      options[key] = Array.from(map.entries())
+        .map(([value, count]) => ({ value, label: value, count }))
+        .sort((a, b) => {
+          if (config.sortBy === 'count') {
+            return b.count - a.count
+          }
+          return a.label.localeCompare(b.label)
+        })
+    }
 
     filterOptions.value = options
   }
 
-  // Fonction pour réinitialiser les filtres
   function reset() {
-    filters.value = {
-      search: '',
-      sources: ['equipements', 'espaces-verts', 'fontaines'],
-      types: [],
-      arrondissements: [],
-      categories: [],
-      etats: [],
-      tarifs: [],
-      horaires: [],
-    }
+    Object.assign(filters.value, {
+      search: '', sources: ['equipements', 'espaces-verts', 'fontaines'],
+      types: [], arrondissements: [], categories: [], etats: [], tarifs: [], horaires: [],
+    })
     pagination.value.page = 1
     filteredData.value = applyFilters(data.value)
     pagination.value.total = filteredData.value.length
   }
 
-  // Computed pour les données paginées
   const currentPageData = computed(() => {
     const start = (pagination.value.page - 1) * pagination.value.pageSize
-    const end = start + pagination.value.pageSize
-    return filteredData.value.slice(start, end)
+    return filteredData.value.slice(start, start + pagination.value.pageSize)
   })
 
-  const totalPages = computed(() => 
-    Math.ceil(pagination.value.total / pagination.value.pageSize)
-  )
+  const totalPages = computed(() => Math.ceil(pagination.value.total / pagination.value.pageSize))
 
-  // Watcher pour recalculer les options quand les données changent
-  watch(data, () => {
-    if (data.value.length > 0) {
-      calculateFilterOptions()
-    }
-  }, { immediate: true })
-
-  // Watcher pour les filtres
+  watch(data, calculateFilterOptions, { immediate: true })
   watch(filters, () => {
     filteredData.value = applyFilters(data.value)
     pagination.value.total = filteredData.value.length
@@ -347,25 +198,10 @@ export const useUnifiedDataStore = defineStore('unified-data', () => {
   }, { deep: true })
 
   return {
-    // État - Reactive refs
-    data: readonly(data),
-    filteredData: readonly(filteredData),
-    filters,
-    loading: readonly(loading),
-    error: readonly(error),
-    pagination,
-    sort,
-    filterOptions: readonly(filterOptions),
-    isLoaded: readonly(isLoaded),
-    
-    // Computed
-    currentPageData,
-    totalPages,
-    
-    // Actions
-    loadAllData,
-    updateFilters,
-    reset,
-    calculateFilterOptions,
+    data: readonly(data), filteredData: readonly(filteredData), filters,
+    loading: readonly(loading), error: readonly(error), pagination, sort,
+    filterOptions: readonly(filterOptions), isLoaded: readonly(isLoaded),
+    currentPageData, totalPages,
+    loadAllData, updateFilters, reset, calculateFilterOptions,
   }
 })

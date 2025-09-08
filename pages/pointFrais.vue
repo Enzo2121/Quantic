@@ -18,13 +18,58 @@ useHead({
 })
 
 const { equipementsStore, espacesVertsStore, fontainesStore, stats, initializeStores, loadStoreData } = useDashboardStores()
-const { getEquipementCellValue, getEspaceVertCellValue, getFontaineCellValue, equipementsColumns, espacesVertsColumns, fontainesColumns } = useDashboardUtils()
+const { getFormattedValue, columnConfigs } = useDashboardUtils()
+
+function renderBadgeFromFormattedValue(config: { variant: string; icon: string; label: string }): string {
+  const variantClasses: Record<string, string> = {
+    success: 'text-green-600',
+    warning: 'text-orange-600',
+    info: 'text-blue-600',
+    muted: 'text-muted-foreground italic',
+    default: 'text-gray-700',
+  }
+
+  const className = variantClasses[config.variant] || variantClasses.default
+  
+  if (config.variant === 'muted') {
+    return `<span class="${className}">${config.label}</span>`
+  }
+
+  return `<span class="inline-flex items-center gap-1 ${className}"><i class="${config.icon} w-4 h-4"></i>${config.label}</span>`
+}
+
+function getEquipementCellValue(item: any, column: string): string {
+  const value = getFormattedValue(item, column, 'equipements')
+  if (typeof value === 'string') {
+    return value
+  }
+  return renderBadgeFromFormattedValue(value)
+}
+
+function getEspaceVertCellValue(item: any, column: string): string {
+  const value = getFormattedValue(item, column, 'espaces-verts')
+  if (typeof value === 'string') {
+    return value
+  }
+  return renderBadgeFromFormattedValue(value)
+}
+
+function getFontaineCellValue(item: any, column: string): string {
+  const value = getFormattedValue(item, column, 'fontaines')
+  if (typeof value === 'string') {
+    return value
+  }
+  return renderBadgeFromFormattedValue(value)
+}
+
+const equipementsColumns = computed(() => [...columnConfigs.value.equipements])
+const espacesVertsColumns = computed(() => [...columnConfigs.value.espacesVerts])
+const fontainesColumns = computed(() => [...columnConfigs.value.fontaines])
 
 const activeTab = ref('equipements')
 const isMapModalOpen = ref(false)
 const selectedMapItem = ref<any>(null)
 
-// Computed pour les options de filtres avec valeurs par défaut sécurisées
 const safeEquipementsFilterOptions = computed(() => ({
   types: equipementsStore.filterOptions?.types || [],
   arrondissements: equipementsStore.filterOptions?.arrondissements || [],
@@ -45,7 +90,6 @@ const safeFontainesFilterOptions = computed(() => ({
   etats: fontainesStore.filterOptions?.etats || [],
 }))
 
-// Computed pour les filtres avec valeurs par défaut sécurisées
 const safeEquipementsFilters = computed(() => ({
   search: equipementsStore.filters?.search || '',
   types: equipementsStore.filters?.types || [],
@@ -73,8 +117,7 @@ onMounted(async () => {
   try {
     await initializeStores()
   }
-  catch (error) {
-    // Silently handle initialization errors
+  catch (_error) {
   }
 })
 
@@ -108,7 +151,6 @@ async function handleEquipementsHoraires(value: string[]) {
   await equipementsStore.updateFilters({ horaires: value })
 }
 
-// Removed handleEquipementsAccessibilite function
 
 function handleEquipementsSort(sortBy: string, sortOrder: 'asc' | 'desc') {
   equipementsStore.updateSort(sortBy, sortOrder)
@@ -181,7 +223,6 @@ function handleOpenMapModal(item: any) {
   isMapModalOpen.value = true
 }
 
-// Gestionnaire pour les changements de filtres depuis la carte
 async function handleMapFiltersUpdate(newFilters: any) {
   switch (activeTab.value) {
     case 'equipements':
@@ -196,7 +237,6 @@ async function handleMapFiltersUpdate(newFilters: any) {
   }
 }
 
-// Gestionnaires manquants pour espaces verts
 async function handleEspacesVertsSearch(value: string) {
   await espacesVertsStore.updateFilters({ search: value })
 }
@@ -217,7 +257,6 @@ async function handleEspacesVertsHoraires(value: string[]) {
   await espacesVertsStore.updateFilters({ horaires: value })
 }
 
-// Removed handleEspacesVertsAccessibilite function
 
 function handleEspacesVertsSort(sortBy: string, sortOrder: 'asc' | 'desc') {
   espacesVertsStore.updateSort(sortBy, sortOrder)
@@ -235,7 +274,6 @@ function handleEspacesVertsReset() {
   espacesVertsStore.reset()
 }
 
-// Gestionnaires manquants pour fontaines
 async function handleFontainesSearch(value: string) {
   await fontainesStore.updateFilters({ search: value })
 }
@@ -252,7 +290,6 @@ async function handleFontainesEtats(value: string[]) {
   await fontainesStore.updateFilters({ etats: value })
 }
 
-// Removed handleFontainesAccessibilite function
 
 function handleFontainesSort(sortBy: string, sortOrder: 'asc' | 'desc') {
   fontainesStore.updateSort(sortBy, sortOrder)
